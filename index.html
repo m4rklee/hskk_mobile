@@ -6,58 +6,107 @@
 <title>HSK口语练习 - 移动端原型</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
 <style>
+/* ===== CSS Variables - Refined Palette ===== */
 :root {
     --accent: #e94560;
+    --accent-soft: #f472b6;
     --gold: #d4af37;
+    --gold-light: #f3d78c;
+    --gold-dark: #b8962e;
     --cream: #faf8f5;
-    --gray-900: #1a1a2e;
-    --gray-800: #16213e;
+    --cream-warm: #f5f0e8;
+    --ink: #1a1a2e;
+    --ink-light: #2d2d44;
+    --slate: #64748b;
+    --slate-light: #94a3b8;
+    --success: #10b981;
+    --warning: #f59e0b;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(26, 26, 46, 0.06);
+    --shadow-md: 0 4px 16px rgba(26, 26, 46, 0.1);
+    --shadow-lg: 0 8px 32px rgba(26, 26, 46, 0.14);
+    --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.25);
+    --shadow-rose: 0 4px 20px rgba(233, 69, 96, 0.2);
+
+    /* Transitions */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ===== Reset & Base ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
-    font-family: 'Noto Serif SC', serif;
-    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    font-family: 'Noto Serif SC', 'ZCOOL KuaiLe', serif;
+    background: linear-gradient(145deg, #0f0f1a 0%, #1a1a2e 30%, #16213e 60%, #0f3460 100%);
     min-height: 100vh;
     padding: 20px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    overflow-x: hidden;
 }
 
-/* Phone Frame */
+/* Subtle noise texture overlay */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+/* ===== Phone Frame ===== */
 .phone-frame {
     width: 100%;
     max-width: 390px;
-    background: #1a1a1a;
-    border-radius: 40px;
-    padding: 6px;
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border-radius: 44px;
+    padding: 8px;
     box-shadow:
-        0 0 0 2px #333,
-        0 0 0 6px #111,
-        0 20px 60px rgba(0,0,0,0.6);
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 0 0 3px #333,
+        0 0 0 8px #111,
+        0 25px 80px rgba(0,0,0,0.7),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    position: relative;
+}
+
+/* Phone frame subtle shine */
+.phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    border-radius: 100%;
 }
 
 .phone-inner {
     background: var(--cream);
-    border-radius: 34px;
+    border-radius: 38px;
     overflow: hidden;
     position: relative;
     height: calc(100vh - 40px);
-    max-height: 850px;
+    max-height: 860px;
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.03);
 }
 
-/* Status Bar */
+/* ===== Status Bar ===== */
 .status-bar {
     height: 47px;
     background: #000;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px;
+    padding: 0 24px 0 28px;
     color: #fff;
     font-size: 14px;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -65,51 +114,73 @@ body {
     z-index: 10;
 }
 
-.status-bar .time { font-weight: 600; }
+.status-bar .time { font-weight: 600; letter-spacing: 0.5px; }
 .status-bar .icons { display: flex; gap: 6px; font-size: 12px; }
 
-/* Notch */
+/* ===== Notch ===== */
 .notch {
     position: absolute;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 100px;
+    width: 108px;
     height: 28px;
     background: #000;
-    border-radius: 0 0 18px 18px;
+    border-radius: 0 0 20px 20px;
     z-index: 11;
 }
 
-/* Screen */
+/* ===== Screens ===== */
 .screen {
     display: none;
     height: calc(100% - 47px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    position: relative;
+    position: absolute;
+    top: 47px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
 }
 
 .screen.active { display: block; }
 
-/* Content Container */
-.content {
-    padding: 0 16px 80px;
-    min-height: 100%;
+.screen-content {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 20px 90px;
+    background: var(--cream);
 }
 
-/* Bottom Nav */
+/* Subtle gradient overlays */
+.screen-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(180deg, rgba(212,175,55,0.03) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.screen-content::-webkit-scrollbar { width: 3px; }
+.screen-content::-webkit-scrollbar-track { background: transparent; }
+.screen-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+
+/* ===== Bottom Navigation ===== */
 .bottom-nav {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0,0,0,0.06);
     display: flex;
     justify-content: space-around;
-    padding: 6px 0 12px;
+    padding: 8px 8px 20px;
     z-index: 100;
 }
 
@@ -118,439 +189,689 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4px 16px;
+    padding: 6px 14px;
     cursor: pointer;
-    border-radius: 10px;
-    transition: all 0.15s;
-    min-width: 60px;
+    border-radius: 16px;
+    transition: all 0.3s var(--ease-out);
+    min-width: 64px;
+    position: relative;
 }
 
-.nav-item:active { transform: scale(0.92); background: rgba(0,0,0,0.05); }
-.nav-item.active .nav-icon { color: var(--accent); }
-.nav-item.active .nav-label { color: var(--accent); font-weight: 500; }
-.nav-icon { font-size: 22px; color: #8e8e93; }
-.nav-label { font-size: 10px; color: #8e8e93; font-family: -apple-system, sans-serif; }
+.nav-item::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 24px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: transform 0.3s var(--ease-bounce);
+}
 
-/* Hero Section */
+.nav-item.active::before { transform: translateX(-50%) scaleX(1); }
+.nav-item:active { transform: scale(0.94); }
+
+.nav-item.active .nav-icon {
+    color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.nav-item.active .nav-label {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.nav-icon {
+    font-size: 22px;
+    color: var(--slate);
+    transition: all 0.3s var(--ease-out);
+    margin-bottom: 2px;
+}
+
+.nav-label {
+    font-size: 10px;
+    color: var(--slate-light);
+    font-family: -apple-system, sans-serif;
+    transition: all 0.3s var(--ease-out);
+}
+
+/* ===== Hero Section ===== */
 .hero {
-    background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
-    border-radius: 20px;
-    padding: 20px;
+    background: linear-gradient(135deg, var(--ink) 0%, var(--ink-light) 50%, #2d2d44 100%);
+    border-radius: 24px;
+    padding: 24px;
     color: white;
-    margin: 16px 0;
+    margin: 20px 0;
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-lg);
 }
 
+/* Decorative elements */
 .hero::before {
     content: '';
     position: absolute;
-    top: -40%;
-    right: -20%;
+    top: -60%;
+    right: -30%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.05) 50%, transparent 70%);
+    animation: heroGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlow {
+    0% { opacity: 0.6; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.1); }
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    left: -20%;
     width: 150px;
     height: 150px;
-    background: radial-gradient(circle, rgba(212,175,55,0.15), transparent);
+    background: radial-gradient(circle, rgba(233,69,96,0.15) 0%, transparent 70%);
 }
 
 .hero-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background: rgba(255,255,255,0.1);
-    padding: 4px 10px;
+    backdrop-filter: blur(10px);
+    padding: 6px 12px;
     border-radius: 20px;
     font-size: 11px;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
 .hero-badge-dot {
     width: 6px;
     height: 6px;
-    background: #fbbf24;
+    background: var(--gold);
     border-radius: 50%;
-    animation: blink 2s infinite;
+    box-shadow: 0 0 8px var(--gold);
+    animation: pulse 2s ease-in-out infinite;
 }
 
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.2); }
+}
 
-.hero h1 { font-size: 20px; font-weight: 700; line-height: 1.3; margin-bottom: 6px; }
-.hero p { font-size: 12px; color: #d1d5db; line-height: 1.5; margin-bottom: 12px; }
+.hero h1 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.hero p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
 
 .hero-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: white;
-    color: var(--gray-900);
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-size: 13px;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: var(--ink);
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+    box-shadow: var(--shadow-gold);
+    transition: all 0.3s var(--ease-out);
+    position: relative;
+    z-index: 1;
 }
 
-.hero-btn:active { transform: scale(0.97); }
+.hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.4);
+}
 
-/* Gradient Text */
+.hero-btn:active {
+    transform: scale(0.97);
+}
+
+/* ===== Gradient Text ===== */
 .gradient-text {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--gold-light) 50%, var(--gold) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-/* Stats Row */
+/* ===== Stats Row ===== */
 .stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 .stat-item {
     background: white;
-    border-radius: 12px;
-    padding: 10px 6px;
+    border-radius: 16px;
+    padding: 14px 8px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.03);
+    transition: all 0.3s var(--ease-out);
 }
 
-.stat-value { font-size: 16px; font-weight: 700; color: var(--accent); }
-.stat-label { font-size: 9px; color: #9ca3af; margin-top: 2px; }
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
 
-/* Section Title */
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: var(--slate);
+    margin-top: 4px;
+    font-family: -apple-system, sans-serif;
+}
+
+/* ===== Section Title ===== */
 .section-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 12px;
+    color: var(--ink);
+    margin-bottom: 14px;
     padding-left: 4px;
+    position: relative;
 }
 
-/* Level Cards */
+.section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    background: linear-gradient(180deg, var(--accent), var(--gold));
+    border-radius: 2px;
+}
+
+/* ===== Level Cards ===== */
+.level-grid {
+    display: grid;
+    gap: 14px;
+}
+
 .level-card {
     background: white;
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-    cursor: pointer;
-    transition: all 0.2s;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.03);
+    transition: all 0.4s var(--ease-out);
+    position: relative;
+    overflow: hidden;
+}
+
+.level-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+}
+
+.level-card.beginner::before { background: linear-gradient(90deg, #34d399, #10b981); }
+.level-card.intermediate::before { background: linear-gradient(90deg, #60a5fa, #4f46e5); }
+.level-card.advanced::before { background: linear-gradient(90deg, #fb7185, #db2777); }
+
+.level-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-lg);
 }
 
 .level-card:active { transform: scale(0.98); }
 
-.level-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.level-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
 
 .level-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 24px;
 }
 
-.level-icon.beginner { background: linear-gradient(135deg, #34d399, #059669); }
-.level-icon.intermediate { background: linear-gradient(135deg, #60a5fa, #4f46e5); }
-.level-icon.advanced { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.level-card.beginner .level-icon { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.level-card.intermediate .level-icon { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+.level-card.advanced .level-icon { background: linear-gradient(135deg, #fce7f3, #fbcfe8); }
 
-.level-name { font-size: 14px; font-weight: 600; color: #1f2937; }
-.level-desc { font-size: 11px; color: #9ca3af; line-height: 1.4; margin-bottom: 8px; }
+.level-info h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+}
 
-.level-footer { display: flex; justify-content: space-between; align-items: center; }
+.level-info p {
+    font-size: 12px;
+    color: var(--slate);
+}
 
-.level-action { font-size: 11px; font-weight: 600; }
-.level-action.green { color: #059669; }
-.level-action.blue { color: #4f46e5; }
-.level-action.amber { color: #f59e0b; }
+.level-stats {
+    display: flex;
+    gap: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
 
-.level-duration {
+.level-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.level-stat-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.level-stat-label {
     font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 6px;
+    color: var(--slate-light);
+    font-family: -apple-system, sans-serif;
 }
 
-.level-duration.green { background: #d1fae5; color: #059669; }
-.level-duration.blue { background: #dbeafe; color: #2563eb; }
-.level-duration.amber { background: #fef3c7; color: #d97706; }
+/* ===== Practice Button ===== */
+.practice-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--ink);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out);
+}
 
-/* Features */
-.features { margin-bottom: 16px; }
+.practice-btn:hover {
+    background: var(--accent);
+    transform: scale(1.05);
+}
 
-.feature-card {
-    background: white;
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 10px;
+/* ===== Level Select Screen ===== */
+.level-select-header {
+    padding: 20px 0;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
 }
 
-.feature-icon {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 8px;
+.level-select-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.level-select-header p {
+    font-size: 13px;
+    color: var(--slate);
+}
+
+.level-types-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.level-type-card {
+    background: white;
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out);
+}
+
+.level-type-card:hover {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-gold);
+    transform: translateX(4px);
+}
+
+.level-type-card:active { transform: scale(0.98); }
+
+.type-icon {
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-}
-
-.feature-icon.amber { background: linear-gradient(135deg, #fef3c7, #fcd34d); color: #d97706; }
-.feature-icon.rose { background: linear-gradient(135deg, #ffe4e6, #fb7185); color: #e11d48; }
-.feature-icon.blue { background: linear-gradient(135deg, #dbeafe, #60a5fa); color: #2563eb; }
-
-.feature-title { font-size: 13px; font-weight: 600; color: #1f2937; margin-bottom: 3px; }
-.feature-desc { font-size: 10px; color: #9ca3af; }
-
-/* Level Screen */
-.header {
-    position: sticky;
-    top: 0;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(10px);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    z-index: 50;
-}
-
-.header-back {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    background: #f5f5f5;
-    color: #666;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.header-title { font-size: 14px; font-weight: 600; color: #1f2937; }
-
-/* Practice Type Button */
-.practice-type-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px;
-    background: linear-gradient(135deg, #faf8f5, white);
-    border-radius: 14px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 2px solid transparent;
-}
-
-.practice-type-btn:active { transform: scale(0.98); }
-.practice-type-btn:hover { border-color: var(--gold); }
-
-.type-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
+    font-size: 20px;
     color: white;
+    box-shadow: var(--shadow-sm);
 }
 
 .type-icon.green { background: linear-gradient(135deg, #34d399, #059669); }
 .type-icon.blue { background: linear-gradient(135deg, #60a5fa, #4f46e5); }
 .type-icon.rose { background: linear-gradient(135deg, #fb7185, #db2777); }
 .type-icon.amber { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.type-icon.purple { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
 
 .type-info { flex: 1; }
-.type-name { font-size: 14px; font-weight: 600; color: #1f2937; }
-.type-desc { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+.type-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 3px;
+}
+
+.type-desc {
+    font-size: 12px;
+    color: var(--slate);
+}
 
 .type-arrow {
-    width: 28px;
-    height: 28px;
-    background: #f3f4f6;
-    border-radius: 8px;
+    color: var(--slate-light);
+    font-size: 18px;
+    transition: all 0.3s var(--ease-out);
+}
+
+.level-type-card:hover .type-arrow {
+    color: var(--gold);
+    transform: translateX(4px);
+}
+
+/* ===== Practice Screen ===== */
+.practice-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    color: #ccc;
-    font-size: 12px;
+    padding: 16px 0;
 }
 
-/* Tips Card */
-.tips-card {
-    background: linear-gradient(135deg, #fffbeb, #fef3c7);
-    border-radius: 14px;
-    padding: 12px;
-    margin-bottom: 16px;
-    border: 1px solid #fcd34d;
+.practice-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
 }
 
-.tips-title { font-size: 12px; font-weight: 600; color: #92400e; display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
-.tips-content { font-size: 11px; color: #a16207; line-height: 1.5; }
-
-/* Practice Screen */
-.timer-box {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, #fff1f2, #ffedd5);
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-}
-
-.question-card {
-    background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 12px;
-    color: white;
-    display: flex;
-    gap: 10px;
-}
-
-.question-icon {
+.close-btn {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, var(--gold), var(--accent));
-    border-radius: 10px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.05);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--slate);
+    transition: all 0.3s var(--ease-out);
 }
 
-.question-content h3 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.question-content p { font-size: 11px; color: #d1d5db; line-height: 1.5; }
+.close-btn:hover { background: rgba(0,0,0,0.1); }
 
-/* Picture Area */
-.picture-area {
-    background: white;
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+.practice-progress {
+    margin-bottom: 20px;
 }
 
-.picture-area img { width: 100%; border-radius: 12px; margin-bottom: 6px; }
-.picture-hint { text-align: center; font-size: 11px; color: #9ca3af; }
+.progress-bar {
+    height: 6px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
 
-/* Audio Area */
-.audio-area {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 3px;
+    transition: width 0.5s var(--ease-out);
+}
+
+.progress-text {
+    font-size: 12px;
+    color: var(--slate);
     text-align: center;
+}
+
+.practice-content {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 20px;
+}
+
+.audio-area {
+    text-align: center;
+    padding: 30px 0;
 }
 
 .audio-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #fcd34d, #f59e0b);
-    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+    border-radius: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    margin: 0 auto 10px;
-    animation: audioPulse 1.5s infinite;
+    font-size: 36px;
+    margin: 0 auto 16px;
+    box-shadow: var(--shadow-rose);
 }
 
-@keyframes audioPulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.8; }
+.audio-hint {
+    font-size: 14px;
+    color: var(--slate);
 }
 
-.audio-text { font-size: 13px; color: #92400e; font-weight: 600; margin-bottom: 10px; }
-
-.audio-progress {
-    height: 5px;
-    background: #f3f4f6;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.audio-progress-bar {
-    width: 35%;
-    height: 100%;
-    background: linear-gradient(90deg, #fcd34d, #f59e0b);
-    border-radius: 3px;
-    animation: audioProgress 2s infinite;
-}
-
-@keyframes audioProgress { 0% { width: 0%; } 100% { width: 100%; } }
-
-/* Text Question */
-.text-question {
-    background: linear-gradient(135deg, #fffbeb, #fef3c7);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 12px;
+.picture-area {
     text-align: center;
-    font-size: 15px;
-    color: #92400e;
-    border: 2px solid #fcd34d;
 }
 
-/* Recording Area */
-.recording-area {
+.picture-display {
+    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 16px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    padding: 20px;
+    justify-content: center;
 }
 
-.mic-btn {
+.picture-display span {
+    font-size: 80px;
+}
+
+.picture-hint {
+    font-size: 12px;
+    color: var(--slate);
+}
+
+/* ===== Record Button ===== */
+.record-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: white;
+    box-shadow: var(--shadow-rose);
+    transition: all 0.3s var(--ease-out);
+    margin: 0 auto;
+}
+
+.record-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 30px rgba(233, 69, 96, 0.4);
+}
+
+.record-btn.recording {
+    animation: recordPulse 1.5s ease-in-out infinite;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+@keyframes recordPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+}
+
+.record-status {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--slate);
+}
+
+.record-status.active { color: var(--accent); font-weight: 600; }
+
+.record-timer {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: center;
+    margin-top: 16px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+}
+
+/* ===== Practice Controls ===== */
+.practice-controls {
+    margin-top: 20px;
+}
+
+/* ===== Audio Play Button ===== */
+.audio-play-btn {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--gold));
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    border: none;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 26px;
+    font-size: 24px;
     color: white;
-    box-shadow: 0 6px 20px rgba(233,69,96,0.35);
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 10px;
+    box-shadow: var(--shadow-gold);
+    transition: all 0.3s var(--ease-out);
+    margin: 0 auto 16px;
 }
 
-.mic-btn:active { transform: scale(0.95); }
-.mic-btn.recording {
-    background: linear-gradient(135deg, #f43f5e, #be123c);
-    animation: pulse 1.5s infinite;
+.audio-play-btn:hover {
+    transform: scale(1.1);
 }
 
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(244,63,94,0.4); }
-    50% { box-shadow: 0 0 0 18px rgba(244,63,94,0); }
+.audio-play-btn.playing {
+    animation: audioPlaying 1s ease-in-out infinite;
 }
 
-.recording-status { font-size: 12px; color: #9ca3af; margin-bottom: 12px; }
-.recording-status.active { color: var(--accent); }
-.recording-status.done { color: #10b981; }
+@keyframes audioPlaying {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
 
-.waveform { display: none; align-items: center; justify-content: center; gap: 3px; height: 28px; margin-bottom: 12px; }
-.waveform.active { display: flex; }
+.audio-progress {
+    height: 6px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 16px auto;
+    max-width: 200px;
+}
+
+.audio-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* ===== Question Display ===== */
+.question-display {
+    background: linear-gradient(135deg, var(--cream-warm), white);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+    border: 2px solid rgba(212,175,55,0.2);
+}
+
+.question-text {
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.question-type-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+    color: white;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ===== Waveform ===== */
+.waveform {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 32px;
+    margin-bottom: 12px;
+}
 
 .wave-bar {
-    width: 3px;
-    background: #fca5a5;
+    width: 4px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-soft));
     border-radius: 2px;
-    animation: wave 0.8s ease-in-out infinite;
+    animation: wave 0.6s ease-in-out infinite;
 }
 
 .wave-bar:nth-child(1) { animation-delay: 0s; }
@@ -561,263 +882,443 @@ body {
 .wave-bar:nth-child(6) { animation-delay: 0.5s; }
 .wave-bar:nth-child(7) { animation-delay: 0.6s; }
 
-@keyframes wave { 0%, 100% { height: 6px; } 50% { height: 24px; } }
-
-.btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--gold));
-    color: white;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 13px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(233,69,96,0.25);
+@keyframes wave {
+    0%, 100% { height: 8px; }
+    50% { height: 28px; }
 }
 
-.btn-primary:active { transform: scale(0.97); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+/* ===== Submit Button ===== */
+.submit-btn {
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    margin: 20px auto 0;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-rose);
+    transition: all 0.3s var(--ease-out);
+}
 
-/* Result Screen */
-.card {
-    background: white;
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(233, 69, 96, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== Result Screen ===== */
+.result-header {
+    text-align: center;
+    padding: 30px 0;
 }
 
 .score-circle {
-    width: 80px;
-    height: 80px;
-    position: relative;
-    margin: 0 auto 10px;
-}
-
-.score-circle svg { transform: rotate(-90deg); }
-.score-circle circle { fill: none; stroke-width: 7; }
-.score-circle .bg { stroke: #f3f4f6; }
-.score-circle .progress { stroke: url(#scoreGradient); stroke-linecap: round; stroke-dasharray: 226; stroke-dashoffset: 34; }
-
-.score-value {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--accent);
-}
-
-.card-title { font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 12px; }
-
-.analysis-bar { margin-bottom: 12px; }
-.analysis-bar-header { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; }
-.analysis-bar-label { color: #6b7280; }
-.analysis-bar-value { font-weight: 600; }
-.analysis-bar-value.good { color: #10b981; }
-.analysis-bar-value.mid { color: #3b82f6; }
-.analysis-bar-value.low { color: #f43f5e; }
-
-.analysis-bar-track { height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
-.analysis-bar-fill { height: 100%; border-radius: 3px; }
-
-/* Word Analysis */
-.word-analysis {
-    background: linear-gradient(135deg, #fffbeb, #fefce8);
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 12px;
-    font-size: 14px;
-    line-height: 2;
-}
-
-.word-good { color: #10b981; border-bottom: 2px solid #d1fae5; cursor: pointer; }
-.word-mid { color: #f59e0b; border-bottom: 2px solid #fef3c7; cursor: pointer; }
-.word-bad { color: #ef4444; border-bottom: 2px solid #fee2e2; cursor: pointer; }
-
-/* AI Feedback */
-.ai-feedback {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    background: linear-gradient(135deg, #eef2ff, #ede9fe);
-    border-radius: 14px;
-    margin-bottom: 12px;
-    border: 1px solid #c7d2fe;
-}
-
-.ai-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-}
-
-.ai-content h4 { font-size: 12px; color: #3730a3; margin-bottom: 3px; }
-.ai-content p { font-size: 11px; color: #5b21b6; line-height: 1.5; }
-
-/* History Screen */
-.summary-card {
-    background: linear-gradient(135deg, #1f2937, #4f46e5);
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 12px;
-    color: white;
-}
-
-.summary-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-.summary-desc { font-size: 11px; color: #a5b4fc; margin-bottom: 10px; }
-
-.summary-item {
-    background: rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 8px;
-    margin-bottom: 6px;
-}
-
-.summary-item-label { font-size: 9px; color: #a5b4fc; }
-.summary-item-value { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-
-.filters { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
-
-.filter-pill {
-    padding: 5px 12px;
-    border-radius: 16px;
-    font-size: 11px;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    border: 1px solid #e5e7eb;
-    background: white;
-    color: #6b7280;
-}
-
-.filter-pill:active { transform: scale(0.95); }
-.filter-pill.active { background: linear-gradient(135deg, var(--accent), var(--gold)); color: white; border-color: transparent; }
-
-.history-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px;
-    background: white;
-    border-radius: 14px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid #f3f4f6;
-}
-
-.history-item:active { transform: scale(0.98); }
-
-.history-date {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #fef3c7, #fcd34d);
-    border-radius: 10px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
-    color: #92400e;
+    margin: 0 auto 20px;
+    box-shadow: var(--shadow-rose), var(--shadow-gold);
+    position: relative;
+}
+
+.score-circle::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: white;
+}
+
+.score-value {
+    position: relative;
+    z-index: 1;
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.score-label {
+    position: relative;
+    z-index: 1;
+    font-size: 12px;
+    color: var(--slate);
+    font-family: -apple-system, sans-serif;
+}
+
+.result-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+
+.result-subtitle {
+    font-size: 14px;
+    color: var(--slate);
+}
+
+/* ===== Analysis Bars ===== */
+.analysis-section {
+    margin-bottom: 20px;
+}
+
+.analysis-item {
+    margin-bottom: 16px;
+}
+
+.analysis-bar-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.analysis-label { color: var(--ink); font-weight: 500; }
+.analysis-value { color: var(--slate); font-weight: 600; }
+
+.analysis-bar {
+    height: 8px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.analysis-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s var(--ease-out);
+}
+
+.analysis-fill.green { background: linear-gradient(90deg, #34d399, #10b981); }
+.analysis-fill.blue { background: linear-gradient(90deg, #60a5fa, #4f46e5); }
+.analysis-fill.rose { background: linear-gradient(90deg, #fb7185, #db2777); }
+.analysis-fill.gold { background: linear-gradient(90deg, var(--gold), var(--gold-dark)); }
+
+/* ===== Word Analysis ===== */
+.word-analysis {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
+}
+
+.word-analysis h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 14px;
+}
+
+.word-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 18px;
+    line-height: 2;
+}
+
+.word-item {
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out);
+}
+
+.word-item:hover { transform: scale(1.1); }
+
+.word-item.good { background: rgba(16, 185, 129, 0.15); color: #059669; }
+.word-item.mid { background: rgba(245, 158, 11, 0.15); color: #d97706; }
+.word-item.bad { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+
+/* ===== AI Feedback ===== */
+.ai-feedback {
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    gap: 14px;
+    border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.ai-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
     flex-shrink: 0;
 }
 
-.history-date .day { font-size: 16px; font-weight: 700; }
+.ai-content h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
 
-.history-info { flex: 1; min-width: 0; }
-.history-tags { display: flex; gap: 4px; margin-bottom: 3px; }
-.history-tag { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-.history-tag.level-beginner { background: #d1fae5; color: #059669; }
-.history-tag.level-inter { background: #dbeafe; color: #2563eb; }
-.history-tag.level-advanced { background: #fce7f3; color: #db2777; }
-.history-tag.type { background: #f3f4f6; color: #6b7280; }
+.ai-content p {
+    font-size: 13px;
+    color: var(--slate);
+    line-height: 1.6;
+}
 
-.history-title { font-size: 13px; font-weight: 600; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.history-meta { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+/* ===== Action Buttons ===== */
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+}
 
-.history-score { text-align: right; }
-.history-score .score-num { font-size: 20px; font-weight: 700; color: var(--accent); }
-.history-score .score-label { font-size: 8px; color: #9ca3af; }
+.action-btn {
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out);
+    text-align: center;
+}
 
-/* Modal */
+.action-btn.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-rose);
+}
+
+.action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(233, 69, 96, 0.4);
+}
+
+.action-btn.secondary {
+    background: white;
+    color: var(--ink);
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: var(--shadow-sm);
+}
+
+.action-btn.secondary:hover {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-gold);
+}
+
+/* ===== History Screen ===== */
+.history-header {
+    padding: 20px 0;
+}
+
+.history-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.history-item {
+    background: white;
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out);
+}
+
+.history-item:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+}
+
+.history-date {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.history-date span {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.history-info {
+    flex: 1;
+}
+
+.history-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.history-meta {
+    font-size: 11px;
+    color: var(--slate);
+}
+
+.history-score {
+    text-align: right;
+}
+
+.history-score-value {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.history-score-label {
+    font-size: 10px;
+    color: var(--slate-light);
+}
+
+/* ===== Modal ===== */
 .modal-overlay {
     position: absolute;
     inset: 0;
     background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
     display: none;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     z-index: 200;
+    padding: 20px;
 }
 
 .modal-overlay.active { display: flex; }
 
-.modal {
+.modal-content {
     background: white;
+    border-radius: 24px;
+    padding: 24px;
     width: 100%;
-    border-radius: 24px 24px 0 0;
-    padding: 20px;
-    animation: slideUp 0.3s ease;
+    max-width: 300px;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.3s var(--ease-bounce);
 }
 
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
 
-.modal-char { font-size: 40px; text-align: center; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
-.modal-pinyin { text-align: center; font-size: 18px; color: var(--gold); font-family: monospace; margin-bottom: 14px; }
+.modal-char {
+    font-size: 48px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+
+.modal-pinyin {
+    text-align: center;
+    font-size: 20px;
+    color: var(--gold);
+    font-family: monospace;
+    margin-bottom: 20px;
+}
 
 .modal-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-    border-radius: 10px;
+    background: rgba(0,0,0,0.03);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.modal-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--slate);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: 8px;
 }
 
-.modal-section.standard { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
-.modal-section.user { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
-.modal-section.tip { background: linear-gradient(135deg, #ffe4e6, #fecdd3); }
-
-.modal-section-label { font-size: 11px; font-weight: 600; }
-.modal-section.standard .modal-section-label { color: #059669; }
-.modal-section.user .modal-section-label { color: #2563eb; }
-.modal-section.tip .modal-section-label { color: #e11d48; }
-
-.modal-section-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.modal-tip { font-size: 12px; color: #be123c; line-height: 1.5; margin-bottom: 14px; }
-
-.modal-close {
+.modal-btn {
     width: 100%;
-    padding: 12px;
-    background: #1f2937;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--ink);
     color: white;
-    border-radius: 12px;
+    font-size: 14px;
     font-weight: 600;
     border: none;
     cursor: pointer;
+    transition: all 0.3s var(--ease-out);
+}
+
+.modal-btn:hover { background: var(--accent); }
+
+/* ===== Animations ===== */
+.fade-in {
+    animation: fadeIn 0.5s var(--ease-out) forwards;
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-delay-1 { animation-delay: 0.1s; }
+.fade-in-delay-2 { animation-delay: 0.2s; }
+.fade-in-delay-3 { animation-delay: 0.3s; }
+
+/* ===== Responsive ===== */
+@media (max-width: 400px) {
+    .hero h1 { font-size: 19px; }
+    .hero p { font-size: 12px; }
+    .level-icon { width: 40px; height: 40px; font-size: 20px; }
+    .score-circle { width: 140px; height: 140px; }
+    .score-value { font-size: 40px; }
 }
 </style>
 </head>
 <body>
+<!-- Phone Frame -->
 <div class="phone-frame">
     <div class="phone-inner">
         <!-- Status Bar -->
@@ -832,93 +1333,111 @@ body {
 
         <!-- Home Screen -->
         <div id="screen-home" class="screen active">
-            <div class="content">
-                <div class="hero">
+            <div class="screen-content">
+                <div class="hero fade-in">
                     <div class="hero-badge">
                         <span class="hero-badge-dot"></span>
                         <span>2026 新版题库已上线</span>
                     </div>
                     <h1>自信开口，<span class="gradient-text">轻松拿下 HSKK</span></h1>
                     <p>AI 语音分析技术，为你提供最真实的模拟环境与精准纠错。</p>
-                    <div class="hero-btn" onclick="showLevelScreen()">
+                    <div class="hero-btn" onclick="showLevelSelect()">
                         <span>开始练习</span>
                         <span>→</span>
                     </div>
                 </div>
 
-                <div class="stats-row">
+                <div class="stats-row fade-in fade-in-delay-1">
                     <div class="stat-item">
-                        <div class="stat-value">12k+</div>
-                        <div class="stat-label">活跃考生</div>
+                        <div class="stat-value">23</div>
+                        <div class="stat-label">练习次数</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" style="color:#10b981">98%</div>
-                        <div class="stat-label">好评率</div>
+                        <div class="stat-value">78</div>
+                        <div class="stat-label">平均分数</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" style="color:#f59e0b">200k</div>
-                        <div class="stat-label">录音样本</div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">连续天数</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" style="color:#e94560">24h</div>
-                        <div class="stat-label">AI在线</div>
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">待完成</div>
                     </div>
                 </div>
 
-                <div class="section-title">选择你的练习等级</div>
+                <div class="section-title fade-in fade-in-delay-2">选择级别开始练习</div>
+                <div class="level-grid">
+                    <div class="level-card beginner fade-in fade-in-delay-1" onclick="selectLevel('beginner')">
+                        <div class="level-header">
+                            <div class="level-icon">🌱</div>
+                            <div class="level-info">
+                                <h3>HSKK 初级</h3>
+                                <p>掌握 200 词即可挑战</p>
+                            </div>
+                        </div>
+                        <div class="level-stats">
+                            <div class="level-stat">
+                                <span class="level-stat-value">15题</span>
+                                <span class="level-stat-label">听后重复</span>
+                            </div>
+                            <div class="level-stat">
+                                <span class="level-stat-value">10题</span>
+                                <span class="level-stat-label">听后回答</span>
+                            </div>
+                            <div class="level-stat">
+                                <span class="level-stat-value">2题</span>
+                                <span class="level-stat-label">回答问题</span>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="level-card" onclick="selectLevel('beginner')">
-                    <div class="level-card-header">
-                        <div class="level-icon beginner">🌱</div>
-                        <div class="level-name">HSKK 初级</div>
+                    <div class="level-card intermediate fade-in fade-in-delay-2" onclick="selectLevel('intermediate')">
+                        <div class="level-header">
+                            <div class="level-icon">⛰️</div>
+                            <div class="level-info">
+                                <h3>HSKK 中级</h3>
+                                <p>累计 300 词储备</p>
+                            </div>
+                        </div>
+                        <div class="level-stats">
+                            <div class="level-stat">
+                                <span class="level-stat-value">1题</span>
+                                <span class="level-stat-label">看图说话</span>
+                            </div>
+                            <div class="level-stat">
+                                <span class="level-stat-value">1题</span>
+                                <span class="level-stat-label">听后复述</span>
+                            </div>
+                            <div class="level-stat">
+                                <span class="level-stat-value">1题</span>
+                                <span class="level-stat-label">回答问题</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="level-desc">掌握200词即可挑战，练习基础发音与日常回应</div>
-                    <div class="level-footer">
-                        <span class="level-action green">立即开始 →</span>
-                        <span class="level-duration green">20分钟</span>
-                    </div>
-                </div>
 
-                <div class="level-card" onclick="selectLevel('intermediate')">
-                    <div class="level-card-header">
-                        <div class="level-icon intermediate">⛰️</div>
-                        <div class="level-name">HSKK 中级</div>
-                    </div>
-                    <div class="level-desc">掌握900词可挑战，涵盖看图说话与长句表达</div>
-                    <div class="level-footer">
-                        <span class="level-action blue">立即开始 →</span>
-                        <span class="level-duration blue">23分钟</span>
-                    </div>
-                </div>
-
-                <div class="level-card" onclick="selectLevel('advanced')">
-                    <div class="level-card-header">
-                        <div class="level-icon advanced">👑</div>
-                        <div class="level-name">HSKK 高级</div>
-                    </div>
-                    <div class="level-desc">掌握3000词以上，挑战听后复述与深度讨论</div>
-                    <div class="level-footer">
-                        <span class="level-action amber">立即开始 →</span>
-                        <span class="level-duration amber">25分钟</span>
-                    </div>
-                </div>
-
-                <div class="section-title">为什么选择我们？</div>
-                <div class="features">
-                    <div class="feature-card">
-                        <div class="feature-icon amber">🧠</div>
-                        <div class="feature-title">智能发音诊断</div>
-                        <div class="feature-desc">毫秒级解析，精确到声母韵母声调</div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon rose">💬</div>
-                        <div class="feature-title">沉浸式真题场景</div>
-                        <div class="feature-desc">还原考试流程，进考场不紧张</div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon blue">📊</div>
-                        <div class="feature-title">全方位进步轨迹</div>
-                        <div class="feature-desc">可视化图表，智能推送薄弱环节</div>
+                    <div class="level-card advanced fade-in fade-in-delay-3" onclick="selectLevel('advanced')">
+                        <div class="level-header">
+                            <div class="level-icon">👑</div>
+                            <div class="level-info">
+                                <h3>HSKK 高级</h3>
+                                <p>高频 600 词全覆盖</p>
+                            </div>
+                        </div>
+                        <div class="level-stats">
+                            <div class="level-stat">
+                                <span class="level-stat-value">1题</span>
+                                <span class="level-stat-label">朗读</span>
+                            </div>
+                            <div class="level-stat">
+                                <span class="level-stat-value">1题</span>
+                                <span class="level-stat-label">听后复述</span>
+                            </div>
+                            <div class="level-stat">
+                                <span class="level-stat-value">1题</span>
+                                <span class="level-stat-label">命题说话</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -926,243 +1445,171 @@ body {
 
         <!-- Level Select Screen -->
         <div id="screen-level" class="screen">
-            <div class="header">
-                <div class="header-back" onclick="goHome()">←</div>
-                <div class="header-title" id="levelTitle">选择练习类型</div>
-                <div style="width:32px"></div>
-            </div>
-            <div class="content">
-                <div id="levelTypes"></div>
-                <div class="tips-card">
-                    <div class="tips-title">💡 备考锦囊</div>
-                    <div class="tips-content" id="levelTips">在练习时，保持语流完整比准确复述每个词更重要。</div>
+            <div class="screen-content">
+                <div class="level-select-header fade-in">
+                    <h2 id="level-title">选择练习类型</h2>
+                    <p id="level-desc">请选择你要练习的题型</p>
                 </div>
+                <div class="level-types-grid" id="level-types"></div>
             </div>
         </div>
 
         <!-- Practice Screen -->
         <div id="screen-practice" class="screen">
-            <div class="header">
-                <div class="header-back" onclick="exitPractice()">✕</div>
-                <div class="header-title" id="practiceTitle">中级练习</div>
-                <div class="timer-box">
-                    <span>⏱</span>
-                    <span id="timerDisplay">02:00</span>
+            <div class="screen-content">
+                <div class="practice-header">
+                    <h2 id="practice-title">练习</h2>
+                    <div class="close-btn" onclick="exitPractice()">✕</div>
                 </div>
-            </div>
-            <div class="content">
-                <div class="question-card">
-                    <div class="question-icon">ℹ</div>
-                    <div class="question-content">
-                        <h3>题目说明</h3>
-                        <p id="questionInstruction">请观察图片并说一段话。</p>
+                <div class="practice-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text">0 / 0</div>
+                </div>
+                <div class="practice-content" id="practice-content">
+                    <div class="audio-area">
+                        <div class="audio-icon">🔊</div>
+                        <div class="audio-hint" id="audio-hint">选择题型后开始练习</div>
                     </div>
                 </div>
-
-                <div class="picture-area" id="pictureArea">
-                    <img src="https://modao.cc/agent-py/media/generated_images/2026-03-27/248032590cb444b78c00f0152c991291.jpg" alt="看图">
-                    <div class="picture-hint">提示图：全家吃晚饭</div>
-                </div>
-
-                <div class="audio-area" id="audioArea" style="display:none;">
-                    <div class="audio-icon">🔊</div>
-                    <div class="audio-text">正在播放题目音频...</div>
-                    <div class="audio-progress"><div class="audio-progress-bar"></div></div>
-                </div>
-
-                <div class="text-question" id="textQuestion" style="display:none;">
-                    如果现在你有一个月的假期，你打算做什么？
-                </div>
-
-                <div class="recording-area">
-                    <div class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</div>
-                    <div class="recording-status" id="recordingStatus">点击麦克风开始录音</div>
-                    <div class="waveform" id="waveform">
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                    </div>
-                    <button class="btn-primary" id="submitBtn" style="display:none;width:100%;" onclick="submitPractice()">提交录音</button>
-                </div>
-
-                <div class="tips-card">
-                    <div class="tips-title">✨ 智能助手建议</div>
-                    <div class="tips-content">建议录音时长 45-60 秒，保持语速平稳。</div>
-                </div>
+                <div class="practice-controls" id="practice-controls"></div>
             </div>
         </div>
 
         <!-- Result Screen -->
         <div id="screen-result" class="screen">
-            <div class="header">
-                <div class="header-back" onclick="goHome()">←</div>
-                <div class="header-title">练习分析报告</div>
-                <div style="width:32px"></div>
-            </div>
-            <div class="content">
-                <div class="card">
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <div class="score-circle">
-                            <svg width="80" height="80">
-                                <defs>
-                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stop-color="#e94560"/>
-                                        <stop offset="100%" stop-color="#d4af37"/>
-                                    </linearGradient>
-                                </defs>
-                                <circle class="bg" cx="40" cy="40" r="36"/>
-                                <circle class="progress" cx="40" cy="40" r="36"/>
-                            </svg>
-                            <div class="score-value">85</div>
+            <div class="screen-content">
+                <div class="result-header fade-in">
+                    <div class="score-circle">
+                        <span class="score-value" id="score-value">85</span>
+                        <span class="score-label">总分</span>
+                    </div>
+                    <div class="result-title">成绩优良</div>
+                    <div class="result-subtitle">超过了 82% 的同级别考生</div>
+                </div>
+
+                <div class="analysis-section fade-in fade-in-delay-1">
+                    <div class="analysis-item">
+                        <div class="analysis-bar-header">
+                            <span class="analysis-label">准确度 (Accuracy)</span>
+                            <span class="analysis-value">88%</span>
                         </div>
-                        <div style="flex:1;">
-                            <div style="font-size:18px;font-weight:700;color:#1f2937;margin-bottom:3px;">成绩优良</div>
-                            <div style="font-size:11px;color:#9ca3af;">超过 82% 同级别考生</div>
+                        <div class="analysis-bar">
+                            <div class="analysis-fill green" style="width: 88%"></div>
+                        </div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-bar-header">
+                            <span class="analysis-label">流利度 (Fluency)</span>
+                            <span class="analysis-value">76%</span>
+                        </div>
+                        <div class="analysis-bar">
+                            <div class="analysis-fill blue" style="width: 76%"></div>
+                        </div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-bar-header">
+                            <span class="analysis-label">完整度 (Completeness)</span>
+                            <span class="analysis-value">95%</span>
+                        </div>
+                        <div class="analysis-bar">
+                            <div class="analysis-fill gold" style="width: 95%"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-title">📊 多维度分析</div>
-                    <div class="analysis-bar">
-                        <div class="analysis-bar-header">
-                            <span class="analysis-bar-label">准确度</span>
-                            <span class="analysis-bar-value good">88%</span>
-                        </div>
-                        <div class="analysis-bar-track"><div class="analysis-bar-fill" style="width:88%;background:linear-gradient(90deg,#34d399,#10b981);"></div></div>
-                    </div>
-                    <div class="analysis-bar">
-                        <div class="analysis-bar-header">
-                            <span class="analysis-bar-label">流利度</span>
-                            <span class="analysis-bar-value mid">76%</span>
-                        </div>
-                        <div class="analysis-bar-track"><div class="analysis-bar-fill" style="width:76%;background:linear-gradient(90deg,#60a5fa,#3b82f6);"></div></div>
-                    </div>
-                    <div class="analysis-bar">
-                        <div class="analysis-bar-header">
-                            <span class="analysis-bar-label">完整度</span>
-                            <span class="analysis-bar-value good">95%</span>
-                        </div>
-                        <div class="analysis-bar-track"><div class="analysis-bar-fill" style="width:95%;background:linear-gradient(90deg,#fb7185,#e11d48);"></div></div>
+                <div class="word-analysis fade-in fade-in-delay-2">
+                    <h3>识别文本分析</h3>
+                    <div class="word-list" id="word-list">
+                        <span class="word-item good" onclick="showWordDetail('我们')">我们</span>
+                        <span class="word-item good" onclick="showWordDetail('全家')">全家</span>
+                        <span class="word-item good" onclick="showWordDetail('人')">人</span>
+                        <span class="word-item good" onclick="showWordDetail('在')">在</span>
+                        <span class="word-item good" onclick="showWordDetail('一起')">一起</span>
+                        <span class="word-item good" onclick="showWordDetail('吃饭')">吃饭</span>
+                        <span class="word-item good" onclick="showWordDetail('。')">。</span>
+                        <span class="word-item good" onclick="showWordDetail('菜')">菜</span>
+                        <span class="word-item mid" onclick="showWordDetail('很')">很</span>
+                        <span class="word-item good" onclick="showWordDetail('丰富')">丰富</span>
+                        <span class="word-item good" onclick="showWordDetail('，')">，</span>
+                        <span class="word-item good" onclick="showWordDetail('有')">有</span>
+                        <span class="word-item good" onclick="showWordDetail('鱼')">鱼</span>
+                        <span class="word-item good" onclick="showWordDetail('，')">，</span>
+                        <span class="word-item good" onclick="showWordDetail('有')">有</span>
+                        <span class="word-item bad" onclick="showWordDetail('肉')">肉</span>
+                        <span class="word-item good" onclick="showWordDetail('。')">。</span>
+                        <span class="word-item good" onclick="showWordDetail('大家')">大家</span>
+                        <span class="word-item good" onclick="showWordDetail('都')">都</span>
+                        <span class="word-item good" onclick="showWordDetail('很')">很</span>
+                        <span class="word-item good" onclick="showWordDetail('开心')">开心</span>
+                        <span class="word-item good" onclick="showWordDetail('。')">。</span>
                     </div>
                 </div>
 
-                <div class="word-analysis">
-                    <span class="word-good" onclick="showWordModal('我')">我</span>
-                    <span class="word-good" onclick="showWordModal('们')">们</span>
-                    <span class="word-good" onclick="showWordModal('全')">全</span>
-                    <span class="word-good" onclick="showWordModal('家')">家</span>
-                    <span class="word-good" onclick="showWordModal('人')">人</span>
-                    <span class="word-good" onclick="showWordModal('在')">在</span>
-                    <span class="word-good" onclick="showWordModal('一')">一</span>
-                    <span class="word-good" onclick="showWordModal('起')">起</span>
-                    <span class="word-good" onclick="showWordModal('吃')">吃</span>
-                    <span class="word-good" onclick="showWordModal('饭')">饭</span>。
-                    <span class="word-good" onclick="showWordModal('菜')">菜</span>
-                    <span class="word-mid" onclick="showWordModal('很')">很</span>
-                    <span class="word-good" onclick="showWordModal('丰')">丰</span>
-                    <span class="word-good" onclick="showWordModal('盛')">盛</span>，
-                    <span class="word-good" onclick="showWordModal('有')">有</span>
-                    <span class="word-good" onclick="showWordModal('鱼')">鱼</span>，
-                    <span class="word-good" onclick="showWordModal('有')">有</span>
-                    <span class="word-good" onclick="showWordModal('肉')">肉</span>。
-                    <span class="word-bad" onclick="showWordModal('大家')">大家</span>
-                    <span class="word-good" onclick="showWordModal('都')">都</span>
-                    <span class="word-good" onclick="showWordModal('很')">很</span>
-                    <span class="word-good" onclick="showWordModal('开')">开</span>
-                    <span class="word-mid" onclick="showWordModal('心')">心</span>。
-                </div>
-
-                <div class="ai-feedback">
+                <div class="ai-feedback fade-in fade-in-delay-3">
                     <div class="ai-icon">🤖</div>
                     <div class="ai-content">
                         <h4>AI 专家建议</h4>
-                        <p>整体发音饱满，"盛"字后鼻音处理地道。"大家"第一声需加强。</p>
+                        <p>你的整体发音非常饱满，尤其是"丰富"的后鼻音处理得很地道。但在朗读"肉"字时有一些吞音，建议加强声母 r 的练习。</p>
                     </div>
                 </div>
 
-                <button class="btn-primary" style="width:100%;margin-bottom:8px;" onclick="showLevelScreen()">🔄 再练一次</button>
-                <button class="btn-primary" style="width:100%;background:#f3f4f6;color:#374151;" onclick="showHistory()">📜 查看历史</button>
+                <div class="action-buttons fade-in fade-in-delay-3">
+                    <button class="action-btn primary" onclick="startPractice()">再练一次</button>
+                    <button class="action-btn secondary" onclick="showScreen('screen-history')">查看历史</button>
+                </div>
             </div>
         </div>
 
         <!-- History Screen -->
         <div id="screen-history" class="screen">
-            <div class="header">
-                <div class="header-back" onclick="goHome()">←</div>
-                <div class="header-title">学习成长足迹</div>
-                <div style="width:32px"></div>
-            </div>
-            <div class="content">
-                <div class="summary-card">
-                    <div class="summary-title">📈 练习总结</div>
-                    <div class="summary-desc">最近 7 天练习 12 次，平均分提升 5.2 分</div>
-                    <div class="summary-item">
-                        <div class="summary-item-label">最擅长题型</div>
-                        <div class="summary-item-value"><span style="color:#34d399">★</span> 看图说话 (92分)</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-item-label">待提高题型</div>
-                        <div class="summary-item-value"><span style="color:#fb7185">↑</span> 听后复述 (68分)</div>
-                    </div>
+            <div class="screen-content">
+                <div class="history-header fade-in">
+                    <h2>学习成长足迹</h2>
                 </div>
-
-                <div class="filters">
-                    <div class="filter-pill active" onclick="filterHistory(this,'all')">全部</div>
-                    <div class="filter-pill" onclick="filterHistory(this,'beginner')">初级</div>
-                    <div class="filter-pill" onclick="filterHistory(this,'intermediate')">中级</div>
-                    <div class="filter-pill" onclick="filterHistory(this,'advanced')">高级</div>
-                </div>
-
-                <div class="history-item" onclick="showResult()">
-                    <div class="history-date"><span>Mar</span><span class="day">27</span></div>
-                    <div class="history-info">
-                        <div class="history-tags">
-                            <span class="history-tag level-inter">中级</span>
-                            <span class="history-tag type">看图说话</span>
+                <div class="history-list">
+                    <div class="history-item fade-in" onclick="showScreen('screen-result')">
+                        <div class="history-date">
+                            <span>27</span>
+                            Mar
                         </div>
-                        <div class="history-title">全家一起吃晚饭</div>
-                        <div class="history-meta">1分12秒 | 82词</div>
-                    </div>
-                    <div class="history-score">
-                        <div class="score-num gradient-text">85</div>
-                        <div class="score-label">Score</div>
-                    </div>
-                </div>
-
-                <div class="history-item" onclick="showResult()">
-                    <div class="history-date"><span>Mar</span><span class="day">25</span></div>
-                    <div class="history-info">
-                        <div class="history-tags">
-                            <span class="history-tag level-advanced">高级</span>
-                            <span class="history-tag type">朗读</span>
+                        <div class="history-info">
+                            <div class="history-title">全家一起吃晚饭</div>
+                            <div class="history-meta">中级 · 看图说话 · 1分12秒</div>
                         </div>
-                        <div class="history-title">论中华饮食文化</div>
-                        <div class="history-meta">45秒 | 156词</div>
-                    </div>
-                    <div class="history-score">
-                        <div class="score-num" style="color:#9ca3af;">72</div>
-                        <div class="score-label">Score</div>
-                    </div>
-                </div>
-
-                <div class="history-item" onclick="showResult()">
-                    <div class="history-date"><span>Mar</span><span class="day">20</span></div>
-                    <div class="history-info">
-                        <div class="history-tags">
-                            <span class="history-tag level-beginner">初级</span>
-                            <span class="history-tag type">听后回答</span>
+                        <div class="history-score">
+                            <div class="history-score-value">85</div>
+                            <div class="history-score-label">Score</div>
                         </div>
-                        <div class="history-title">日常购物场景</div>
-                        <div class="history-meta">2分05秒 | 45词</div>
                     </div>
-                    <div class="history-score">
-                        <div class="score-num" style="color:#9ca3af;">64</div>
-                        <div class="score-label">Score</div>
+                    <div class="history-item fade-in fade-in-delay-1" onclick="showScreen('screen-result')">
+                        <div class="history-date">
+                            <span>25</span>
+                            Mar
+                        </div>
+                        <div class="history-info">
+                            <div class="history-title">论中华饮食文化</div>
+                            <div class="history-meta">高级 · 朗读 · 45秒</div>
+                        </div>
+                        <div class="history-score">
+                            <div class="history-score-value">72</div>
+                            <div class="history-score-label">Score</div>
+                        </div>
+                    </div>
+                    <div class="history-item fade-in fade-in-delay-2" onclick="showScreen('screen-result')">
+                        <div class="history-date">
+                            <span>20</span>
+                            Mar
+                        </div>
+                        <div class="history-info">
+                            <div class="history-title">日常购物场景</div>
+                            <div class="history-meta">初级 · 听后回答 · 2分05秒</div>
+                        </div>
+                        <div class="history-score">
+                            <div class="history-score-value">64</div>
+                            <div class="history-score-label">Score</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1170,57 +1617,37 @@ body {
 
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="goHome();updateNav(this)">
+            <div class="nav-item active" onclick="goHome(); updateNav(this)">
                 <span class="nav-icon">🏠</span>
                 <span class="nav-label">首页</span>
             </div>
-            <div class="nav-item" onclick="showLevelScreen();updateNav(this)">
-                <span class="nav-icon">🎯</span>
+            <div class="nav-item" onclick="showLevelSelect(); updateNav(this)">
+                <span class="nav-icon">📚</span>
                 <span class="nav-label">练习</span>
             </div>
-            <div class="nav-item" onclick="showHistory();updateNav(this)">
-                <span class="nav-icon">📜</span>
+            <div class="nav-item" onclick="showScreen('screen-history'); updateNav(this)">
+                <span class="nav-icon">📊</span>
                 <span class="nav-label">历史</span>
-            </div>
-            <div class="nav-item" onclick="alert('个人中心开发中')">
-                <span class="nav-icon">👤</span>
-                <span class="nav-label">我的</span>
             </div>
         </div>
 
-        <!-- Word Modal -->
-        <div class="modal-overlay" id="wordModal" onclick="closeWordModal(event)">
-            <div class="modal">
-                <div class="modal-char" id="modalChar">家</div>
-                <div class="modal-pinyin" id="modalPinyin">jiā</div>
-                <div class="modal-section standard">
-                    <span class="modal-section-label">标准读音</span>
-                    <div class="modal-section-btn">🔊</div>
+        <!-- Word Detail Modal -->
+        <div class="modal-overlay" id="word-modal" onclick="closeModal(event)">
+            <div class="modal-content">
+                <div class="modal-char" id="modal-char">菜</div>
+                <div class="modal-pinyin" id="modal-pinyin">cài</div>
+                <div class="modal-section">
+                    <div class="modal-section-title">发音评估</div>
+                    <p style="font-size: 13px; color: var(--slate);">发音非常标准！继续保持这种语感。</p>
                 </div>
-                <div class="modal-section user">
-                    <span class="modal-section-label">你的读音</span>
-                    <div class="modal-section-btn">▶</div>
-                </div>
-                <div class="modal-section tip">
-                    <span class="modal-section-label">发音建议</span>
-                </div>
-                <p class="modal-tip" id="modalTip">声调稍微低了一点，建议抬高音调。发音准确率为 92%。</p>
-                <button class="modal-close" onclick="closeWordModal()">确定</button>
+                <button class="modal-btn" onclick="closeModal(event)">确定</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// State
-let currentLevel = null;
-let currentType = null;
-let isRecording = false;
-let recordingSeconds = 0;
-let timerInterval = null;
-let practiceSeconds = 120;
-
-// Update time
+// Time update
 function updatePhoneTime() {
     const now = new Date();
     const h = now.getHours().toString().padStart(2,'0');
@@ -1251,11 +1678,10 @@ const levelData = {
     beginner: {
         name: 'HSKK 初级',
         types: [
-            { id: 'repeat', name: '听后重复', desc: '共15题，播放后重复', icon: '👂', color: 'green' },
-            { id: 'qa', name: '听后回答', desc: '共10题，听后回答', icon: '💬', color: 'blue' },
-            { id: 'answer', name: '回答问题', desc: '共2题，至少5句话', icon: '📝', color: 'rose' }
-        ],
-        tips: '保持语流完整比准确复述每个词更重要。不要紧张，发挥平时水平。'
+            { id: 'repeat', name: '听后重复', desc: '共15题，每题播放一句话，听后请准确重复', icon: '👂', color: 'green' },
+            { id: 'qa', name: '课后回答', desc: '共10题，听后简短回答', icon: '💬', color: 'blue' },
+            { id: 'answer', name: '回答问题', desc: '共2题，看拼音问题，每题至少说5句话', icon: '📝', color: 'rose' }
+        ]
     },
     intermediate: {
         name: 'HSKK 中级',
@@ -1263,215 +1689,294 @@ const levelData = {
             { id: 'picture', name: '看图说话', desc: '观察图片说一段话', icon: '🖼', color: 'green' },
             { id: 'retell', name: '听后复述', desc: '听后复述内容', icon: '🔄', color: 'blue' },
             { id: 'qa', name: '回答问题', desc: '根据问题回答', icon: '❓', color: 'rose' }
-        ],
-        tips: '多练习看图说话的逻辑组织，尝试使用"首先、其次、最后"等连接词。'
+        ]
     },
     advanced: {
         name: 'HSKK 高级',
         types: [
-            { id: 'reading', name: '朗读', desc: '用标准普通话朗读', icon: '📖', color: 'amber' },
-            { id: 'retell', name: '听后复述', desc: '复述较长内容', icon: '🔄', color: 'blue' },
-            { id: 'question', name: '回答问题', desc: '回答2个深度问题', icon: '❓', color: 'rose' }
-        ],
-        tips: '侧重表达的深度和广度。建议多关注时事新闻，积累高级词汇。'
+            { id: 'read', name: '朗读', desc: '朗读短文', icon: '📖', color: 'amber' },
+            { id: 'retell', name: '听后复述', desc: '听后复述内容', icon: '🔄', color: 'purple' },
+            { id: 'speak', name: '命题说话', desc: '根据题目说话', icon: '🎤', color: 'rose' }
+        ]
     }
 };
 
-// Show Level Screen
-function showLevelScreen() {
-    document.getElementById('levelTitle').textContent = '选择练习等级';
-    const container = document.getElementById('levelTypes');
-    container.innerHTML = `
-        <div class="practice-type-btn" onclick="selectLevel('beginner')">
-            <div class="type-icon green">🌱</div>
-            <div class="type-info">
-                <div class="type-name">HSKK 初级</div>
-                <div class="type-desc">掌握200词即可挑战</div>
-            </div>
-            <div class="type-arrow">▶</div>
-        </div>
-        <div class="practice-type-btn" onclick="selectLevel('intermediate')">
-            <div class="type-icon blue">⛰️</div>
-            <div class="type-info">
-                <div class="type-name">HSKK 中级</div>
-                <div class="type-desc">掌握900词可挑战</div>
-            </div>
-            <div class="type-arrow">▶</div>
-        </div>
-        <div class="practice-type-btn" onclick="selectLevel('advanced')">
-            <div class="type-icon amber">👑</div>
-            <div class="type-info">
-                <div class="type-name">HSKK 高级</div>
-                <div class="type-desc">掌握3000词以上</div>
-            </div>
-            <div class="type-arrow">▶</div>
-        </div>
-    `;
-    document.querySelector('#screen-level .tips-card').style.display = 'none';
+let currentLevel = '';
+let currentType = '';
+let isRecording = false;
+let recordTimer = null;
+let recordSeconds = 0;
+
+function showLevelSelect() {
     showScreen('screen-level');
+    document.getElementById('level-title').textContent = '选择级别';
+    document.getElementById('level-desc').textContent = '请选择一个级别开始练习';
+    const grid = document.getElementById('level-types');
+    grid.innerHTML = '';
+    Object.keys(levelData).forEach(key => {
+        const level = levelData[key];
+        const card = document.createElement('div');
+        card.className = 'level-type-card';
+        card.onclick = () => selectLevel(key);
+        const icons = { beginner: '🌱', intermediate: '⛰️', advanced: '👑' };
+        card.innerHTML = `
+            <div class="type-icon ${key === 'beginner' ? 'green' : key === 'intermediate' ? 'blue' : 'rose'}">${icons[key]}</div>
+            <div class="type-info">
+                <div class="type-name">${level.name}</div>
+                <div class="type-desc">${level.types.length} 种题型</div>
+            </div>
+            <span class="type-arrow">›</span>
+        `;
+        grid.appendChild(card);
+    });
 }
 
-// Select Level
 function selectLevel(level) {
     currentLevel = level;
-    const info = levelData[level];
-    document.getElementById('levelTitle').textContent = info.name + ' - 题型选择';
-    document.getElementById('levelTips').textContent = info.tips;
-    document.querySelector('#screen-level .tips-card').style.display = 'block';
-
-    const container = document.getElementById('levelTypes');
-    container.innerHTML = info.types.map(t => `
-        <div class="practice-type-btn" onclick="startPractice('${t.id}')">
+    showScreen('screen-level');
+    const data = levelData[level];
+    document.getElementById('level-title').textContent = data.name;
+    document.getElementById('level-desc').textContent = '请选择练习类型';
+    const grid = document.getElementById('level-types');
+    grid.innerHTML = '';
+    data.types.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'level-type-card';
+        card.onclick = () => startPractice(t.id);
+        card.innerHTML = `
             <div class="type-icon ${t.color}">${t.icon}</div>
             <div class="type-info">
                 <div class="type-name">${t.name}</div>
                 <div class="type-desc">${t.desc}</div>
             </div>
-            <div class="type-arrow">▶</div>
+            <span class="type-arrow">›</span>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// Practice type content templates
+const practiceContent = {
+    repeat: {
+        title: '听后重复',
+        content: `<div class="audio-area">
+            <button class="audio-play-btn" id="audio-play-btn" onclick="playAudio()">🔊</button>
+            <div class="audio-progress" id="audio-progress" style="display:none">
+                <div class="audio-progress-bar" id="audio-progress-bar" style="width:0%"></div>
+            </div>
+            <div class="audio-hint" id="audio-hint">点击播放音频，听后准确重复</div>
+            <div class="waveform" id="waveform">
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            </div>
+        </div>`
+    },
+    qa: {
+        title: '听后回答',
+        content: `<div class="audio-area">
+            <button class="audio-play-btn" id="audio-play-btn" onclick="playAudio()">🔊</button>
+            <div class="audio-progress" id="audio-progress" style="display:none">
+                <div class="audio-progress-bar" id="audio-progress-bar" style="width:0%"></div>
+            </div>
+            <div class="audio-hint" id="audio-hint">听问题后，给出简短回答</div>
         </div>
-    `).join('');
+        <div class="question-display" id="question-display" style="display:none">
+            <div class="question-text" id="question-text">问题内容</div>
+        </div>`
+    },
+    answer: {
+        title: '回答问题',
+        content: `<div class="question-display">
+            <div class="question-type-badge">看拼音回答</div>
+            <div class="question-text" id="question-text">你最喜欢什么颜色？为什么？</div>
+        </div>
+        <p style="font-size:12px;color:var(--slate);text-align:center;margin-top:8px">请至少说5句话</p>`
+    },
+    picture: {
+        title: '看图说话',
+        content: `<div class="picture-area">
+            <div class="picture-display">
+                <span>🏠</span>
+            </div>
+            <div class="picture-hint">请仔细观察图片，描述你看到的内容</div>
+        </div>`
+    },
+    retell: {
+        title: '听后复述',
+        content: `<div class="audio-area">
+            <button class="audio-play-btn" id="audio-play-btn" onclick="playAudio()">🔊</button>
+            <div class="audio-progress" id="audio-progress" style="display:none">
+                <div class="audio-progress-bar" id="audio-progress-bar" style="width:0%"></div>
+            </div>
+            <div class="audio-hint" id="audio-hint">听短文后，复述主要内容</div>
+        </div>`
+    },
+    read: {
+        title: '朗读',
+        content: `<div class="question-display">
+            <div class="question-type-badge">朗读短文</div>
+            <div class="question-text" id="question-text">中国是一个历史悠久的国家，有着丰富的文化遗产。长城、故宫、兵马俑等都是世界闻名的景点。中国美食也深受世界各国人民喜爱，川菜、粤菜、鲁菜等各具特色。近年来，中国的科技发展迅速，高铁、移动支付等领域走在世界前列。</div>
+        </div>`
+    },
+    speak: {
+        title: '命题说话',
+        content: `<div class="question-display">
+            <div class="question-type-badge">命题说话</div>
+            <div class="question-text" id="question-text">请谈谈你的学习方法</div>
+        </div>
+        <p style="font-size:12px;color:var(--slate);text-align:center;margin-top:8px">请说2分钟</p>`
+    }
+};
+
+let audioPlaying = false;
+let audioProgress = 0;
+
+function playAudio() {
+    const btn = document.getElementById('audio-play-btn');
+    const progress = document.getElementById('audio-progress');
+    const progressBar = document.getElementById('audio-progress-bar');
+    const hint = document.getElementById('audio-hint');
+    const waveform = document.getElementById('waveform');
+
+    if (!audioPlaying) {
+        audioPlaying = true;
+        btn.classList.add('playing');
+        progress.style.display = 'block';
+        if (waveform) waveform.style.display = 'flex';
+        hint.textContent = '播放中...';
+
+        // Simulate audio progress
+        const audioInterval = setInterval(() => {
+            audioProgress += 5;
+            progressBar.style.width = audioProgress + '%';
+            if (audioProgress >= 100) {
+                clearInterval(audioInterval);
+                stopAudio();
+            }
+        }, 300);
+    }
 }
 
-// Start Practice
-function startPractice(type) {
-    currentType = type;
-    const level = levelData[currentLevel];
-    const typeData = level.types.find(t => t.id === type);
+function stopAudio() {
+    audioPlaying = false;
+    audioProgress = 0;
+    const btn = document.getElementById('audio-play-btn');
+    const progressBar = document.getElementById('audio-progress-bar');
+    const hint = document.getElementById('audio-hint');
+    const waveform = document.getElementById('waveform');
 
-    document.getElementById('practiceTitle').textContent = level.name + '：' + typeData.name;
+    btn.classList.remove('playing');
+    progressBar.style.width = '0%';
+    if (waveform) waveform.style.display = 'none';
+    hint.textContent = '播放完成，可以开始录音';
+}
 
-    const pictureArea = document.getElementById('pictureArea');
-    const audioArea = document.getElementById('audioArea');
-    const textQuestion = document.getElementById('textQuestion');
-    const instruction = document.getElementById('questionInstruction');
-
-    pictureArea.style.display = 'none';
-    audioArea.style.display = 'none';
-    textQuestion.style.display = 'none';
-
-    if (type === 'picture') {
-        pictureArea.style.display = 'block';
-        instruction.textContent = '请观察图片并说一段话，建议8-10句。';
-    } else if (type === 'reading') {
-        textQuestion.style.display = 'block';
-        textQuestion.textContent = '中国有句古话叫"民以食为天"，这说明了饮食在人们生活中的重要地位。';
-        instruction.textContent = '请用流利自然的语调朗读下方文字。';
-    } else if (type === 'answer' || type === 'question') {
-        textQuestion.style.display = 'block';
-        textQuestion.textContent = '如果现在你有一个月的假期，你打算做什么？';
-        instruction.textContent = '请根据问题用普通话回答，1-2分钟。';
-    } else if (type === 'repeat' || type === 'retell' || type === 'qa') {
-        audioArea.style.display = 'block';
-        if (type === 'repeat') instruction.textContent = '请先聆听音频，结束后重复内容。';
-        else if (type === 'retell') instruction.textContent = '请先聆听，结束后复述内容。';
-        else if (type === 'qa') instruction.textContent = '请先聆听问题，结束后回答。';
-    }
-
-    isRecording = false;
-    recordingSeconds = 0;
-    document.getElementById('micBtn').classList.remove('recording');
-    document.getElementById('micBtn').textContent = '🎤';
-    document.getElementById('recordingStatus').textContent = '点击麦克风开始录音';
-    document.getElementById('recordingStatus').className = 'recording-status';
-    document.getElementById('waveform').classList.remove('active');
-    document.getElementById('submitBtn').style.display = 'none';
-
-    practiceSeconds = 120;
-    updateTimer();
-
+function startPractice(typeId) {
+    currentType = typeId || currentLevel + '-' + currentLevel;
     showScreen('screen-practice');
-}
 
-function updateTimer() {
-    const m = Math.floor(practiceSeconds / 60).toString().padStart(2,'0');
-    const s = (practiceSeconds % 60).toString().padStart(2,'0');
-    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
-    if (practiceSeconds > 0) {
-        practiceSeconds--;
-        timerInterval = setTimeout(updateTimer, 1000);
+    // Find matching practice type
+    let content = practiceContent['repeat'];
+    for (const key in practiceContent) {
+        if (currentType.includes(key)) {
+            content = practiceContent[key];
+            break;
+        }
     }
+
+    document.getElementById('practice-title').textContent = content.title;
+    document.getElementById('practice-content').innerHTML = content.content;
+    document.getElementById('progress-fill').style.width = '30%';
+    document.getElementById('progress-text').textContent = '3 / 10';
+    document.getElementById('practice-controls').innerHTML = `
+        <button class="record-btn" id="record-btn" onclick="toggleRecord()">🎤</button>
+        <div class="record-status" id="record-status">点击开始录音</div>
+        <div class="record-timer" id="record-timer">00:00</div>
+        <button class="submit-btn" id="submit-btn" onclick="submitAnswer()" disabled>提交答案</button>
+    `;
+    isRecording = false;
+    recordSeconds = 0;
+    audioPlaying = false;
+    audioProgress = 0;
+    updateRecordUI();
 }
 
 function exitPractice() {
-    showScreen('screen-level');
     stopTimers();
+    showScreen('screen-home');
 }
 
-function toggleRecording() {
+function toggleRecord() {
     isRecording = !isRecording;
-    const btn = document.getElementById('micBtn');
-    const status = document.getElementById('recordingStatus');
-    const waveform = document.getElementById('waveform');
-    const submitBtn = document.getElementById('submitBtn');
-
     if (isRecording) {
-        recordingSeconds = 0;
-        btn.classList.add('recording');
-        btn.textContent = '⏹';
-        status.textContent = '正在录音... 00:00';
-        status.className = 'recording-status active';
-        waveform.classList.add('active');
-        timerInterval = setInterval(() => {
-            recordingSeconds++;
-            const m = Math.floor(recordingSeconds / 60).toString().padStart(2,'0');
-            const s = (recordingSeconds % 60).toString().padStart(2,'0');
-            status.textContent = `正在录音... ${m}:${s}`;
+        recordTimer = setInterval(() => {
+            recordSeconds++;
+            updateRecordUI();
         }, 1000);
     } else {
-        clearInterval(timerInterval);
-        btn.classList.remove('recording');
-        btn.textContent = '🔄';
-        const m = Math.floor(recordingSeconds / 60);
-        const s = recordingSeconds % 60;
-        status.textContent = `录音完成 (${m > 0 ? m + '分' : ''}${s}秒)`;
-        status.className = 'recording-status done';
-        waveform.classList.remove('active');
-        submitBtn.style.display = 'block';
+        stopTimers();
     }
-}
-
-function submitPractice() {
-    showScreen('screen-result');
+    updateRecordUI();
 }
 
 function stopTimers() {
-    if (timerInterval) clearInterval(timerInterval);
-    if (timerInterval) clearTimeout(timerInterval);
+    if (recordTimer) {
+        clearInterval(recordTimer);
+        recordTimer = null;
+    }
+    isRecording = false;
+    recordSeconds = 0;
+    updateRecordUI();
 }
 
-// History
-function showHistory() {
-    showScreen('screen-history');
-    updateNav(document.querySelectorAll('.nav-item')[2]);
+function updateRecordUI() {
+    const btn = document.getElementById('record-btn');
+    const status = document.getElementById('record-status');
+    const timer = document.getElementById('record-timer');
+    if (!btn || !status || !timer) return;
+
+    const mins = Math.floor(recordSeconds / 60).toString().padStart(2,'0');
+    const secs = (recordSeconds % 60).toString().padStart(2,'0');
+    timer.textContent = `${mins}:${secs}`;
+    if (isRecording) {
+        btn.classList.add('recording');
+        status.textContent = '正在录音...';
+        status.classList.add('active');
+        // Enable submit button when recording
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.disabled = false;
+    } else {
+        btn.classList.remove('recording');
+        status.textContent = recordSeconds > 0 ? '录音完成' : '点击开始录音';
+        status.classList.remove('active');
+    }
 }
 
-function filterHistory(el, filter) {
-    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-}
-
-// Result
-function showResult() {
+function submitAnswer() {
+    if (recordSeconds < 3) {
+        alert('录音时间太短，请至少录制3秒');
+        return;
+    }
+    stopTimers();
+    // Show result screen
     showScreen('screen-result');
 }
 
-// Word Modal
-function showWordModal(word) {
-    document.getElementById('modalChar').textContent = word;
-    if (word === '大家') {
-        document.getElementById('modalPinyin').textContent = 'dàjiā';
-        document.getElementById('modalTip').textContent = '两个字的第一声和第四声区分不明显，建议加强声调练习。';
-    } else {
-        document.getElementById('modalPinyin').textContent = word + ' (标准)';
-        document.getElementById('modalTip').textContent = '发音非常标准！继续保持。';
-    }
-    document.getElementById('wordModal').classList.add('active');
+// Word detail modal
+function showWordDetail(word) {
+    const pinyinData = {
+        '我们': 'wǒmen', '全家': 'quánjiā', '人': 'rén', '在': 'zài', '一起': 'yìqǐ',
+        '吃饭': 'chīfàn', '菜': 'cài', '很': 'hěn', '丰富': 'fēngfù', '有': 'yǒu',
+        '鱼': 'yú', '肉': 'ròu', '大家': 'dàjiā', '都': 'dōu', '开心': 'kāixīn'
+    };
+    document.getElementById('modal-char').textContent = word;
+    document.getElementById('modal-pinyin').textContent = pinyinData[word] || '---';
+    document.getElementById('word-modal').classList.add('active');
 }
 
-function closeWordModal(e) {
-    if (!e || e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
-        document.getElementById('wordModal').classList.remove('active');
-    }
+function closeModal(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('word-modal').classList.remove('active');
 }
 </script>
 </body>
