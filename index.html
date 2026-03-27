@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>HSK口语练习 - 移动端原型</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --accent: #e94560;
+    --gold: #d4af37;
+    --cream: #faf8f5;
+    --gray-900: #1a1a2e;
+    --gray-800: #16213e;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+    font-family: 'Noto Serif SC', serif;
+    background-color: var(--cream);
+    background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(233, 69, 96, 0.06) 0%, transparent 50%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.app-container {
+    width: 100%;
+    height: 100%;
+    background: var(--cream);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Phone Frame */
+.phone-frame {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.phone-wrapper {
+    position: relative;
+    width: 380px;
+    max-width: 100%;
+}
+
+.phone-frame-outer {
+    background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
+    border-radius: 44px;
+    padding: 8px;
+    box-shadow:
+        0 0 0 2px #3d3d3d,
+        0 0 0 8px #1a1a1a,
+        0 25px 50px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.phone-frame-inner {
+    background: var(--cream);
+    border-radius: 36px;
+    overflow: hidden;
+    position: relative;
+    height: 800px; /* Fixed height for phone simulation */
+}
+
+.phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 28px;
+    background: #1a1a1a;
+    border-radius: 0 0 18px 18px;
+    z-index: 10;
+}
+
+.phone-status-bar {
+    height: 28px;
+    background: #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    color: white;
+    font-size: 11px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.phone-time { font-weight: 600; }
+.phone-icons { display: flex; gap: 6px; }
+
+.phone-home-bar {
+    display: none; /* Using custom bottom nav instead */
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
+    background: #3d3d3d;
+    border-radius: 2px;
+    z-index: 10;
+}
+
+/* Screen Management */
+.screen { display: none; height: calc(100% - 56px); position: relative; overflow-y: auto; }
+.screen.active { display: block; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-around;
+    padding: 4px 0 8px;
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    padding: 6px 16px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.15s ease;
+    min-width: 60px;
+}
+
+.nav-item:active { transform: scale(0.92); background: rgba(0,0,0,0.05); }
+.nav-item.active .nav-icon { color: var(--accent); }
+.nav-item.active .nav-label { color: var(--accent); font-weight: 500; }
+.nav-icon { font-size: 22px; color: #8e8e93; transition: color 0.2s; }
+.nav-label { font-size: 10px; color: #8e8e93; transition: color 0.2s; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+
+/* Header */
+.header {
+    position: sticky;
+    top: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    padding: 12px 16px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-title { font-size: 16px; font-weight: 600; color: #1f2937; }
+.header-back {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #faf8f5;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.header-back:active { background: #f3f0e8; transform: scale(0.95); }
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    margin: 0 16px 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.card-title { font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-size: 14px;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    color: white;
+    box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
+}
+
+.btn-secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+/* Practice Types */
+.practice-type-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: linear-gradient(135deg, #faf8f5, white);
+    border-radius: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.practice-type-btn:active { transform: scale(0.98); }
+.practice-type-btn:hover { border-color: var(--gold); }
+
+.type-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+}
+
+.type-icon.green { background: linear-gradient(135deg, #34d399, #059669); }
+.type-icon.blue { background: linear-gradient(135deg, #60a5fa, #4f46e5); }
+.type-icon.rose { background: linear-gradient(135deg, #fb7185, #db2777); }
+.type-icon.amber { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+
+.type-info { flex: 1; }
+.type-name { font-size: 15px; font-weight: 600; color: #1f2937; }
+.type-desc { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
+.type-arrow {
+    width: 32px;
+    height: 32px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d1d5db;
+    font-size: 16px;
+}
+
+/* Recording Area */
+.recording-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+}
+
+.mic-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    box-shadow: 0 8px 25px rgba(233, 69, 96, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+}
+
+.mic-btn:active { transform: scale(0.95); }
+.mic-btn.recording {
+    background: linear-gradient(135deg, #f43f5e, #be123c);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+    50% { box-shadow: 0 0 0 20px rgba(244, 63, 94, 0); }
+}
+
+.recording-status {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 16px;
+}
+
+.recording-status.active { color: var(--accent); }
+.recording-status.done { color: #10b981; }
+
+/* Waveform */
+.waveform {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 32px;
+    margin-bottom: 16px;
+}
+
+.wave-bar {
+    width: 3px;
+    background: #fca5a5;
+    border-radius: 2px;
+    animation: wave 0.8s ease-in-out infinite;
+}
+
+.wave-bar:nth-child(1) { animation-delay: 0s; }
+.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { animation-delay: 0.3s; }
+.wave-bar:nth-child(5) { animation-delay: 0.4s; }
+.wave-bar:nth-child(6) { animation-delay: 0.5s; }
+.wave-bar:nth-child(7) { animation-delay: 0.6s; }
+
+@keyframes wave {
+    0%, 100% { height: 6px; }
+    50% { height: 28px; }
+}
+
+.waveform.hidden .wave-bar { animation: none; height: 6px; opacity: 0.3; }
+
+/* Timer */
+.timer-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #fff1f2, #ffedd5);
+    border-radius: 12px;
+    border: 1px solid rgba(252, 165, 165, 0.3);
+}
+
+.timer-icon { font-size: 16px; color: var(--accent); }
+.timer-display {
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+/* Question Card */
+.question-card {
+    background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
+    border-radius: 20px;
+    padding: 16px;
+    margin: 0 16px 16px;
+    color: white;
+    display: flex;
+    gap: 12px;
+}
+
+.question-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--gold), var(--accent));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.question-content h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.question-content p { font-size: 12px; color: #d1d5db; line-height: 1.5; }
+
+/* Picture Area */
+.picture-area {
+    background: white;
+    border-radius: 20px;
+    margin: 0 16px 16px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.picture-area img {
+    width: 100%;
+    border-radius: 16px;
+    margin-bottom: 8px;
+}
+
+.picture-hint { text-align: center; font-size: 12px; color: #9ca3af; }
+
+/* Text Question */
+.text-question {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border-radius: 20px;
+    margin: 0 16px 16px;
+    padding: 20px;
+    text-align: center;
+    font-size: 18px;
+    color: #92400e;
+    border: 2px solid #fcd34d;
+}
+
+/* Audio Player */
+.audio-area {
+    background: white;
+    border-radius: 20px;
+    margin: 0 16px 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.audio-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.audio-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #fcd34d, #f59e0b);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 12px;
+    animation: audioPulse 1.5s infinite;
+}
+
+@keyframes audioPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.audio-text {
+    font-size: 14px;
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.audio-progress {
+    width: 100%;
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.audio-progress-bar {
+    width: 35%;
+    height: 100%;
+    background: linear-gradient(90deg, #fcd34d, #f59e0b);
+    border-radius: 3px;
+    animation: audioProgress 2s infinite;
+}
+
+@keyframes audioProgress {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+/* Score Circle */
+.score-circle {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    margin: 0 auto 12px;
+}
+
+.score-circle svg { transform: rotate(-90deg); }
+.score-circle circle {
+    fill: none;
+    stroke-width: 8;
+}
+.score-circle .bg { stroke: #f3f4f6; }
+.score-circle .progress {
+    stroke: url(#scoreGradient);
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 42;
+    transition: stroke-dashoffset 1s ease;
+}
+
+.score-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+/* Analysis Bars */
+.analysis-bar {
+    margin-bottom: 14px;
+}
+
+.analysis-bar-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.analysis-bar-label { color: #6b7280; }
+.analysis-bar-value { font-weight: 600; }
+.analysis-bar-value.good { color: #10b981; }
+.analysis-bar-value.mid { color: #3b82f6; }
+.analysis-bar-value.low { color: #f43f5e; }
+
+.analysis-bar-track {
+    height: 8px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.analysis-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+/* Word Analysis */
+.word-analysis {
+    background: linear-gradient(135deg, #fffbeb, #fefce8);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 0 16px 16px;
+    font-size: 16px;
+    line-height: 2.2;
+}
+
+.word-good { color: #10b981; border-bottom: 2px solid #d1fae5; cursor: pointer; }
+.word-mid { color: #f59e0b; border-bottom: 2px solid #fef3c7; cursor: pointer; }
+.word-bad { color: #ef4444; border-bottom: 2px solid #fee2e2; cursor: pointer; }
+
+/* AI Feedback */
+.ai-feedback {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, #eef2ff, #ede9fe);
+    border-radius: 16px;
+    margin: 0 16px 16px;
+    border: 1px solid #c7d2fe;
+}
+
+.ai-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.ai-content h4 { font-size: 14px; color: #3730a3; margin-bottom: 4px; }
+.ai-content p { font-size: 12px; color: #5b21b6; line-height: 1.5; }
+
+/* History List */
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: white;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #f3f4f6;
+}
+
+.history-item:active { transform: scale(0.98); }
+
+.history-date {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #fef3c7, #fcd34d);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #92400e;
+    flex-shrink: 0;
+}
+
+.history-date .day { font-size: 18px; font-weight: 700; }
+
+.history-info { flex: 1; }
+.history-tags { display: flex; gap: 6px; margin-bottom: 4px; }
+.history-tag { font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+.history-tag.level-beginner { background: #d1fae5; color: #059669; }
+.history-tag.level-inter { background: #dbeafe; color: #2563eb; }
+.history-tag.level-advanced { background: #fce7f3; color: #db2777; }
+.history-tag.type { background: #f3f4f6; color: #6b7280; }
+.history-title { font-size: 14px; font-weight: 600; color: #1f2937; }
+.history-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+.history-score {
+    text-align: right;
+}
+
+.history-score .score-num {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.history-score .score-label { font-size: 9px; color: #9ca3af; }
+
+/* Stats */
+.stats-row {
+    display: flex;
+    gap: 10px;
+    margin: 0 16px 16px;
+}
+
+.stat-item {
+    flex: 1;
+    background: white;
+    border-radius: 14px;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.stat-value { font-size: 20px; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
+    border-radius: 20px;
+    margin: 16px;
+    padding: 20px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.2), transparent);
+    border-radius: 50%;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+.hero-badge-dot { width: 6px; height: 6px; background: #fbbf24; border-radius: 50%; animation: blink 2s infinite; }
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.hero h1 { font-size: 22px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+.hero p { font-size: 12px; color: #d1d5db; line-height: 1.5; margin-bottom: 14px; }
+
+.hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    color: var(--gray-900);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hero-btn:active { transform: scale(0.97); }
+
+/* Level Cards */
+.level-section { padding: 0 16px; }
+.level-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 12px;
+    padding-left: 4px;
+}
+
+.level-card {
+    background: white;
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.level-card:active { transform: scale(0.98); }
+
+.level-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.level-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+}
+
+.level-icon.beginner { background: linear-gradient(135deg, #34d399, #059669); }
+.level-icon.intermediate { background: linear-gradient(135deg, #60a5fa, #4f46e5); }
+.level-icon.advanced { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+
+.level-name { font-size: 16px; font-weight: 600; color: #1f2937; }
+.level-desc { font-size: 12px; color: #9ca3af; line-height: 1.4; margin-bottom: 10px; }
+
+.level-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.level-action {
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.level-action.green { color: #059669; }
+.level-action.blue { color: #4f46e5; }
+.level-action.amber { color: #f59e0b; }
+
+.level-duration {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+.level-duration.green { background: #d1fae5; color: #059669; }
+.level-duration.blue { background: #dbeafe; color: #2563eb; }
+.level-duration.amber { background: #fef3c7; color: #d97706; }
+
+/* Features */
+.features { padding: 0 16px; }
+
+.feature-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    text-align: center;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 10px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.feature-icon.amber { background: linear-gradient(135deg, #fef3c7, #fcd34d); color: #d97706; }
+.feature-icon.rose { background: linear-gradient(135deg, #ffe4e6, #fb7185); color: #e11d48; }
+.feature-icon.blue { background: linear-gradient(135deg, #dbeafe, #60a5fa); color: #2563eb; }
+
+.feature-title { font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px; }
+.feature-desc { font-size: 11px; color: #9ca3af; line-height: 1.4; }
+
+/* Summary Card */
+.summary-card {
+    background: linear-gradient(135deg, #1f2937, #4f46e5);
+    border-radius: 18px;
+    padding: 16px;
+    margin: 0 16px 16px;
+    color: white;
+}
+
+.summary-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.summary-desc { font-size: 11px; color: #a5b4fc; margin-bottom: 12px; }
+
+.summary-item {
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.summary-item-label { font-size: 10px; color: #a5b4fc; }
+.summary-item-value { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+
+/* Filters */
+.filters {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 12px;
+    overflow-x: auto;
+}
+
+.filter-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+}
+
+.filter-pill:active { transform: scale(0.95); }
+.filter-pill.active { background: linear-gradient(135deg, var(--accent), var(--gold)); color: white; border-color: transparent; }
+
+/* Modal */
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 200;
+    padding: 0;
+}
+
+.modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+
+.modal {
+    background: white;
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 20px;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-char { font-size: 48px; text-align: center; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
+.modal-pinyin { text-align: center; font-size: 20px; color: var(--gold); font-family: monospace; margin-bottom: 16px; }
+
+.modal-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.modal-section.standard { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.modal-section.user { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+.modal-section.tip { background: linear-gradient(135deg, #ffe4e6, #fecdd3); }
+
+.modal-section-label { font-size: 12px; font-weight: 600; }
+.modal-section.standard .modal-section-label { color: #059669; }
+.modal-section.user .modal-section-label { color: #2563eb; }
+.modal-section.tip .modal-section-label { color: #e11d48; }
+
+.modal-section-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modal-tip { font-size: 13px; color: #be123c; line-height: 1.5; }
+
+.modal-close {
+    width: 100%;
+    padding: 14px;
+    background: #1f2937;
+    color: white;
+    border-radius: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+/* Section Title */
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 20px 16px 12px;
+}
+
+/* Tips Card */
+.tips-card {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border-radius: 16px;
+    padding: 14px;
+    margin: 0 16px 16px;
+    border: 1px solid #fcd34d;
+}
+
+.tips-title { font-size: 13px; font-weight: 600; color: #92400e; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.tips-content { font-size: 12px; color: #a16207; line-height: 1.5; }
+
+/* Practice Type Select */
+.type-select-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.type-select-modal.active { display: flex; }
+
+.type-select-content {
+    background: white;
+    width: 90%;
+    max-width: 340px;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.type-select-title { font-size: 16px; font-weight: 600; color: #1f2937; text-align: center; margin-bottom: 16px; }
+
+.type-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    background: #f9fafb;
+}
+
+.type-option:active { transform: scale(0.98); }
+.type-option:hover { border-color: var(--gold); background: white; }
+
+.type-option-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+}
+
+.type-option-info { flex: 1; }
+.type-option-name { font-size: 14px; font-weight: 600; color: #1f2937; }
+.type-option-desc { font-size: 11px; color: #9ca3af; }
+
+.type-select-cancel {
+    width: 100%;
+    padding: 12px;
+    background: #f3f4f6;
+    color: #6b7280;
+    border-radius: 12px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<div class="phone-frame">
+    <div class="phone-wrapper">
+        <div class="phone-frame-outer">
+            <div class="phone-frame-inner">
+                <!-- Status Bar -->
+                <div class="phone-status-bar">
+                    <span class="phone-time" id="phoneTime">10:00</span>
+                    <div class="phone-icons">
+                        <span>📶</span>
+                        <span>🔋</span>
+                    </div>
+                </div>
+
+                <!-- Notch -->
+                <div class="phone-notch"></div>
+
+                <div class="app-container">
+
+                <!-- ==================== HOME SCREEN ==================== -->
+                <div id="screen-home" class="screen active">
+    <div class="hero">
+        <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            <span>2026 新版题库已上线</span>
+        </div>
+        <h1>自信开口，<span class="gradient-text">轻松拿下 HSKK</span></h1>
+        <p>AI 语音分析技术，为你提供最真实的模拟环境与精准纠错。</p>
+        <div class="hero-btn" onclick="showLevelScreen()">
+            <span>开始练习</span>
+            <span style="font-size:16px">→</span>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-item">
+            <div class="stat-value">12,580</div>
+            <div class="stat-label">活跃考生</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" style="color:#10b981">98.5%</div>
+            <div class="stat-label">好评率</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" style="color:#f59e0b">200k+</div>
+            <div class="stat-label">录音样本</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" style="color:#e94560">24h</div>
+            <div class="stat-label">AI 在线</div>
+        </div>
+    </div>
+
+    <div class="level-section">
+        <div class="level-section-title">选择你的练习等级</div>
+
+        <div class="level-card" onclick="selectLevel('beginner')">
+            <div class="level-card-header">
+                <div class="level-icon beginner">🌱</div>
+                <div class="level-name">HSKK 初级</div>
+            </div>
+            <div class="level-desc">面向掌握约200个最常用词语的考生。重点练习基础发音与简单日常回应。</div>
+            <div class="level-footer">
+                <span class="level-action green">立即开始 →</span>
+                <span class="level-duration green">20分钟/场</span>
+            </div>
+        </div>
+
+        <div class="level-card" onclick="selectLevel('intermediate')">
+            <div class="level-card-header">
+                <div class="level-icon intermediate">⛰️</div>
+                <div class="level-name">HSKK 中级</div>
+            </div>
+            <div class="level-desc">面向掌握约900个常用词语的考生。涵盖看图说话，提升长句表达能力。</div>
+            <div class="level-footer">
+                <span class="level-action blue">立即开始 →</span>
+                <span class="level-duration blue">23分钟/场</span>
+            </div>
+        </div>
+
+        <div class="level-card" onclick="selectLevel('advanced')">
+            <div class="level-card-header">
+                <div class="level-icon advanced">👑</div>
+                <div class="level-name">HSKK 高级</div>
+            </div>
+            <div class="level-desc">面向掌握3000个以上词语的考生。挑战听后复述与高深度问题讨论。</div>
+            <div class="level-footer">
+                <span class="level-action amber">立即开始 →</span>
+                <span class="level-duration amber">25分钟/场</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">为什么选择我们？</div>
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon amber">🧠</div>
+            <div class="feature-title">智能发音诊断</div>
+            <div class="feature-desc">毫秒级解析，精确到声母、韵母、声调</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon rose">💬</div>
+            <div class="feature-title">沉浸式真题场景</div>
+            <div class="feature-desc">还原考试流程，进考场不紧张</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon blue">📊</div>
+            <div class="feature-title">全方位进步轨迹</div>
+            <div class="feature-desc">可视化图表，智能推送薄弱环节</div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== LEVEL SELECT SCREEN ==================== -->
+<div id="screen-level" class="screen">
+    <div class="header">
+        <div class="header-back" onclick="goHome()">←</div>
+        <div class="header-title" id="levelTitle">选择练习类型</div>
+        <div style="width:36px"></div>
+    </div>
+
+    <div id="levelTypes"></div>
+
+    <div class="tips-card">
+        <div class="tips-title">💡 备考锦囊</div>
+        <div class="tips-content" id="levelTips">在练习时，保持语流完整比准确复述每个词更重要。考试时不要紧张，把平时练习的水平发挥出来即可。</div>
+    </div>
+</div>
+
+<!-- ==================== PRACTICE SCREEN ==================== -->
+<div id="screen-practice" class="screen">
+    <div class="header">
+        <div class="header-back" onclick="exitPractice()">✕</div>
+        <div class="header-title" id="practiceTitle">中级练习：看图说话</div>
+        <div class="timer-box">
+            <span class="timer-icon">⏱</span>
+            <span class="timer-display" id="timerDisplay">02:00</span>
+        </div>
+    </div>
+
+    <div class="question-card">
+        <div class="question-icon">ℹ</div>
+        <div class="question-content">
+            <h3>题目说明</h3>
+            <p id="questionInstruction">请观察下方图片，并根据图片内容说一段话。建议说 8-10 句话。</p>
+        </div>
+    </div>
+
+    <!-- Picture Mode -->
+    <div class="picture-area" id="pictureArea">
+        <img src="https://modao.cc/agent-py/media/generated_images/2026-03-27/248032590cb444b78c00f0152c991291.jpg" alt="看图说话" style="width:100%;border-radius:12px;">
+        <div class="picture-hint">提示图：全家吃晚饭</div>
+    </div>
+
+    <!-- Audio Mode -->
+    <div class="audio-area" id="audioArea" style="display:none;">
+        <div class="audio-player">
+            <div class="audio-icon">🔊</div>
+            <div class="audio-text">正在播放题目音频...</div>
+            <div class="audio-progress">
+                <div class="audio-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Text Mode -->
+    <div class="text-question" id="textQuestion" style="display:none;">
+        如果现在你有一个月的假期，你打算做什么？
+    </div>
+
+    <div class="recording-area">
+        <div class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</div>
+        <div class="recording-status" id="recordingStatus">点击麦克风开始录音</div>
+        <div class="waveform hidden" id="waveform">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+        <button class="btn btn-primary" id="submitBtn" style="display:none;width:100%;max-width:280px;margin-top:10px;" onclick="submitPractice()">
+            提交录音
+        </button>
+    </div>
+
+    <div class="tips-card">
+        <div class="tips-title">✨ 智能助手建议</div>
+        <div class="tips-content">当前题目建议录音时长 45-60 秒。请保持语速平稳，AI 会自动过滤重复内容。</div>
+    </div>
+</div>
+
+<!-- ==================== RESULT SCREEN ==================== -->
+<div id="screen-result" class="screen">
+    <div class="header">
+        <div class="header-back" onclick="goHome()">←</div>
+        <div class="header-title">练习分析报告</div>
+        <div style="width:36px"></div>
+    </div>
+
+    <div class="card">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <div class="score-circle">
+                <svg width="100" height="100">
+                    <defs>
+                        <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#e94560"/>
+                            <stop offset="100%" stop-color="#d4af37"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="bg" cx="50" cy="50" r="45"/>
+                    <circle class="progress" cx="50" cy="50" r="45"/>
+                </svg>
+                <div class="score-value">85</div>
+            </div>
+            <div style="flex:1;">
+                <div style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:4px;">成绩优良</div>
+                <div style="font-size:12px;color:#9ca3af;">超过了 82% 的同级别考生</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title" style="font-size:15px;margin-bottom:14px;">📊 多维度分析</div>
+        <div class="analysis-bar">
+            <div class="analysis-bar-header">
+                <span class="analysis-bar-label">准确度 (Accuracy)</span>
+                <span class="analysis-bar-value good">88%</span>
+            </div>
+            <div class="analysis-bar-track">
+                <div class="analysis-bar-fill" style="width:88%;background:linear-gradient(90deg,#34d399,#10b981);"></div>
+            </div>
+        </div>
+        <div class="analysis-bar">
+            <div class="analysis-bar-header">
+                <span class="analysis-bar-label">流利度 (Fluency)</span>
+                <span class="analysis-bar-value mid">76%</span>
+            </div>
+            <div class="analysis-bar-track">
+                <div class="analysis-bar-fill" style="width:76%;background:linear-gradient(90deg,#60a5fa,#3b82f6);"></div>
+            </div>
+        </div>
+        <div class="analysis-bar">
+            <div class="analysis-bar-header">
+                <span class="analysis-bar-label">完整度 (Completeness)</span>
+                <span class="analysis-bar-value good">95%</span>
+            </div>
+            <div class="analysis-bar-track">
+                <div class="analysis-bar-fill" style="width:95%;background:linear-gradient(90deg,#fb7185,#e11d48);"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="word-analysis">
+        <span class="word-good" onclick="showWordModal('我')">我</span>
+        <span class="word-good" onclick="showWordModal('们')">们</span>
+        <span class="word-good" onclick="showWordModal('全')">全</span>
+        <span class="word-good" onclick="showWordModal('家')">家</span>
+        <span class="word-good" onclick="showWordModal('人')">人</span>
+        <span class="word-good" onclick="showWordModal('在')">在</span>
+        <span class="word-good" onclick="showWordModal('一')">一</span>
+        <span class="word-good" onclick="showWordModal('起')">起</span>
+        <span class="word-good" onclick="showWordModal('吃')">吃</span>
+        <span class="word-good" onclick="showWordModal('饭')">饭</span>。
+        <span class="word-good" onclick="showWordModal('菜')">菜</span>
+        <span class="word-mid" onclick="showWordModal('很')">很</span>
+        <span class="word-good" onclick="showWordModal('丰')">丰</span>
+        <span class="word-good" onclick="showWordModal('盛')">盛</span>，
+        <span class="word-good" onclick="showWordModal('有')">有</span>
+        <span class="word-good" onclick="showWordModal('鱼')">鱼</span>，
+        <span class="word-good" onclick="showWordModal('有')">有</span>
+        <span class="word-good" onclick="showWordModal('肉')">肉</span>。
+        <span class="word-bad" onclick="showWordModal('大家')">大家</span>
+        <span class="word-good" onclick="showWordModal('都')">都</span>
+        <span class="word-good" onclick="showWordModal('很')">很</span>
+        <span class="word-good" onclick="showWordModal('开')">开</span>
+        <span class="word-mid" onclick="showWordModal('心')">心</span>。
+    </div>
+
+    <div class="ai-feedback">
+        <div class="ai-icon">🤖</div>
+        <div class="ai-content">
+            <h4>AI 专家建议</h4>
+            <p>你的整体发音非常饱满，尤其是"盛"字的后鼻音处理得很地道。但在朗读"大家"时，第一声的音高略显不足。另外，"很"字后的停顿稍微过长，影响了流利度评分。</p>
+        </div>
+    </div>
+
+    <div style="padding:0 16px 16px;">
+        <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="goHome()">
+            🔄 再练一次
+        </button>
+        <button class="btn btn-secondary" style="width:100%;" onclick="showHistory()">
+            📜 查看历史成长
+        </button>
+    </div>
+</div>
+
+<!-- ==================== HISTORY SCREEN ==================== -->
+<div id="screen-history" class="screen">
+    <div class="header">
+        <div class="header-back" onclick="goHome()">←</div>
+        <div class="header-title">学习成长足迹</div>
+        <div style="width:36px"></div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-title">📈 练习总结</div>
+        <div class="summary-desc">最近 7 天你共练习了 12 次，平均分提升了 5.2 分。</div>
+        <div class="summary-item">
+            <div class="summary-item-label">最擅长题型</div>
+            <div class="summary-item-value">
+                <span style="color:#34d399">★</span>
+                看图说话 (92分)
+            </div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-item-label">待提高题型</div>
+            <div class="summary-item-value">
+                <span style="color:#fb7185">↑</span>
+                听后复述 (68分)
+            </div>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="filter-pill active" onclick="filterHistory(this,'all')">全部</div>
+        <div class="filter-pill" onclick="filterHistory(this,'beginner')">初级</div>
+        <div class="filter-pill" onclick="filterHistory(this,'intermediate')">中级</div>
+        <div class="filter-pill" onclick="filterHistory(this,'advanced')">高级</div>
+    </div>
+
+    <div style="padding:0 16px;">
+        <div class="history-item" onclick="showResult()">
+            <div class="history-date">
+                <span>Mar</span>
+                <span class="day">27</span>
+            </div>
+            <div class="history-info">
+                <div class="history-tags">
+                    <span class="history-tag level-inter">中级</span>
+                    <span class="history-tag type">看图说话</span>
+                </div>
+                <div class="history-title">全家一起吃晚饭</div>
+                <div class="history-meta">作答时长：1分12秒 | 词数：82</div>
+            </div>
+            <div class="history-score">
+                <div class="score-num gradient-text">85</div>
+                <div class="score-label">Score</div>
+            </div>
+        </div>
+
+        <div class="history-item" onclick="showResult()">
+            <div class="history-date">
+                <span>Mar</span>
+                <span class="day">25</span>
+            </div>
+            <div class="history-info">
+                <div class="history-tags">
+                    <span class="history-tag level-advanced">高级</span>
+                    <span class="history-tag type">朗读</span>
+                </div>
+                <div class="history-title">论中华饮食文化</div>
+                <div class="history-meta">作答时长：45秒 | 词数：156</div>
+            </div>
+            <div class="history-score">
+                <div class="score-num" style="color:#9ca3af;">72</div>
+                <div class="score-label">Score</div>
+            </div>
+        </div>
+
+        <div class="history-item" onclick="showResult()">
+            <div class="history-date">
+                <span>Mar</span>
+                <span class="day">20</span>
+            </div>
+            <div class="history-info">
+                <div class="history-tags">
+                    <span class="history-tag level-beginner">初级</span>
+                    <span class="history-tag type">听后回答</span>
+                </div>
+                <div class="history-title">日常购物场景</div>
+                <div class="history-meta">作答时长：2分05秒 | 词数：45</div>
+            </div>
+            <div class="history-score">
+                <div class="score-num" style="color:#9ca3af;">64</div>
+                <div class="score-label">Score</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== BOTTOM NAVIGATION ==================== -->
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="goHome();updateNav(this)">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">首页</span>
+    </div>
+    <div class="nav-item" onclick="showLevelScreen();updateNav(this)">
+        <span class="nav-icon">🎯</span>
+        <span class="nav-label">练习</span>
+    </div>
+    <div class="nav-item" onclick="showHistory();updateNav(this)">
+        <span class="nav-icon">📜</span>
+        <span class="nav-label">历史</span>
+    </div>
+    <div class="nav-item" onclick="alert('个人中心功能开发中')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">我的</span>
+    </div>
+</div>
+
+<!-- Word Detail Modal -->
+<div class="modal-overlay" id="wordModal" onclick="closeWordModal(event)">
+    <div class="modal">
+        <div class="modal-char" id="modalChar">家</div>
+        <div class="modal-pinyin" id="modalPinyin">jiā</div>
+        <div class="modal-section standard">
+            <span class="modal-section-label">标准读音</span>
+            <div class="modal-section-btn" onclick="alert('播放标准发音')">🔊</div>
+        </div>
+        <div class="modal-section user">
+            <span class="modal-section-label">你的读音</span>
+            <div class="modal-section-btn" onclick="alert('播放你的录音')">▶</div>
+        </div>
+        <div class="modal-section tip">
+            <span class="modal-section-label">发音问题与建议</span>
+        </div>
+        <p class="modal-tip" id="modalTip">声调稍微低了一点，建议抬高音调。发音准确率为 92%。</p>
+        <button class="modal-close" onclick="closeWordModal()">确定</button>
+    </div>
+</div>
+
+<!-- Level Select Modal -->
+<div class="type-select-modal" id="levelSelectModal" onclick="closeLevelSelect(event)">
+    <div class="type-select-content">
+        <div class="type-select-title" id="modalLevelTitle">选择练习等级</div>
+        <div id="modalLevelOptions"></div>
+        <button class="type-select-cancel" onclick="closeLevelSelect()">取消</button>
+    </div>
+</div>
+
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+// State
+let currentLevel = null;
+let currentType = null;
+let isRecording = false;
+let recordingSeconds = 0;
+let timerInterval = null;
+let practiceTimer = null;
+let practiceSeconds = 120;
+
+// Update phone time
+function updatePhoneTime() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const timeEl = document.getElementById('phoneTime');
+    if (timeEl) timeEl.textContent = `${hours}:${minutes}`;
+}
+updatePhoneTime();
+setInterval(updatePhoneTime, 1000);
+
+// Navigation
+function updateNav(el) {
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function goHome() {
+    showScreen('screen-home');
+    stopTimers();
+}
+
+function exitPractice() {
+    showScreen('screen-level');
+    stopTimers();
+}
+
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+}
+
+function showLevelScreen() {
+    const levelInfo = levelData['beginner']; // Default to show level select
+    document.getElementById('levelTitle').textContent = '选择练习等级';
+
+    const container = document.getElementById('levelTypes');
+    container.innerHTML = `
+        <div class="practice-type-btn" onclick="selectLevel('beginner')">
+            <div class="type-icon green">🌱</div>
+            <div class="type-info">
+                <div class="type-name">HSKK 初级</div>
+                <div class="type-desc">掌握200词即可挑战</div>
+            </div>
+            <div class="type-arrow">▶</div>
+        </div>
+        <div class="practice-type-btn" onclick="selectLevel('intermediate')">
+            <div class="type-icon blue">⛰️</div>
+            <div class="type-info">
+                <div class="type-name">HSKK 中级</div>
+                <div class="type-desc">掌握900词可挑战</div>
+            </div>
+            <div class="type-arrow">▶</div>
+        </div>
+        <div class="practice-type-btn" onclick="selectLevel('advanced')">
+            <div class="type-icon amber">👑</div>
+            <div class="type-info">
+                <div class="type-name">HSKK 高级</div>
+                <div class="type-desc">掌握3000词以上</div>
+            </div>
+            <div class="type-arrow">▶</div>
+        </div>
+    `;
+
+    // Hide tips for level selection
+    document.querySelector('.tips-card').style.display = 'none';
+
+    showScreen('screen-level');
+}
+
+// Level Selection
+const levelData = {
+    beginner: {
+        name: 'HSKK 初级',
+        color: 'green',
+        types: [
+            { id: 'repeat', name: '听后重复', desc: '共15题，每题播放一句话，听后请准确重复', icon: '👂', color: 'green' },
+            { id: 'qa', name: '听后回答', desc: '共10题，听完简短问题后给出直接回答', icon: '💬', color: 'blue' },
+            { id: 'answer', name: '回答问题', desc: '共2题，看拼音问题，每题至少说5句话', icon: '📝', color: 'rose' }
+        ],
+        tips: '在"听后重复"环节，不要担心漏掉个别词汇，要保持语流的完整。在"回答问题"环节，尽量多使用已学的关联词。'
+    },
+    intermediate: {
+        name: 'HSKK 中级',
+        color: 'blue',
+        types: [
+            { id: 'picture', name: '看图说话', desc: '请观察图片并说一段话，建议8-10句', icon: '🖼', color: 'green' },
+            { id: 'retell', name: '听后复述', desc: '请先聆听音频，结束后复述内容', icon: '🔄', color: 'blue' },
+            { id: 'qa', name: '回答问题', desc: '请根据问题用普通话回答，1-2分钟', icon: '❓', color: 'rose' }
+        ],
+        tips: '中级考试需要更强的表达能力。建议多练习看图说话的逻辑组织，尝试使用"首先、其次、最后"等连接词。'
+    },
+    advanced: {
+        name: 'HSKK 高级',
+        color: 'amber',
+        types: [
+            { id: 'reading', name: '朗读', desc: '请用标准普通话朗读短文，注意语调', icon: '📖', color: 'amber' },
+            { id: 'retell', name: '听后复述', desc: '听后复述较长内容，考察记忆与表达', icon: '🔄', color: 'blue' },
+            { id: 'question', name: '回答问题', desc: '回答2个深度问题，各2分钟以上', icon: '❓', color: 'rose' }
+        ],
+        tips: '高级考试侧重于表达的深度和广度。建议多关注时事新闻，积累高级词汇和复杂句式。'
+    }
+};
+
+function showLevelSelect() {
+    const modal = document.getElementById('levelSelectModal');
+    const optionsContainer = document.getElementById('modalLevelOptions');
+    const title = document.getElementById('modalLevelTitle');
+
+    if (currentLevel) {
+        const level = levelData[currentLevel];
+        title.textContent = level.name + ' - 选择练习类型';
+        optionsContainer.innerHTML = level.types.map(t => `
+            <div class="type-option" onclick="startPractice('${t.id}')">
+                <div class="type-option-icon" style="background: ${t.color === 'green' ? 'linear-gradient(135deg,#34d399,#059669)' : t.color === 'blue' ? 'linear-gradient(135deg,#60a5fa,#4f46e5)' : t.color === 'rose' ? 'linear-gradient(135deg,#fb7185,#db2777)' : 'linear-gradient(135deg,#fbbf24,#f59e0b)'}">${t.icon}</div>
+                <div class="type-option-info">
+                    <div class="type-option-name">${t.name}</div>
+                    <div class="type-option-desc">${t.desc}</div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        title.textContent = '选择练习等级';
+        optionsContainer.innerHTML = `
+            <div class="type-option" onclick="selectLevel('beginner');closeLevelSelect()">
+                <div class="type-option-icon" style="background:linear-gradient(135deg,#34d399,#059669)">🌱</div>
+                <div class="type-option-info">
+                    <div class="type-option-name">HSKK 初级</div>
+                    <div class="type-option-desc">掌握200词即可挑战</div>
+                </div>
+            </div>
+            <div class="type-option" onclick="selectLevel('intermediate');closeLevelSelect()">
+                <div class="type-option-icon" style="background:linear-gradient(135deg,#60a5fa,#4f46e5)">⛰️</div>
+                <div class="type-option-info">
+                    <div class="type-option-name">HSKK 中级</div>
+                    <div class="type-option-desc">掌握900词可挑战</div>
+                </div>
+            </div>
+            <div class="type-option" onclick="selectLevel('advanced');closeLevelSelect()">
+                <div class="type-option-icon" style="background:linear-gradient(135deg,#fbbf24,#f59e0b)">👑</div>
+                <div class="type-option-info">
+                    <div class="type-option-name">HSKK 高级</div>
+                    <div class="type-option-desc">掌握3000词以上</div>
+                </div>
+            </div>
+        `;
+    }
+    modal.classList.add('active');
+}
+
+function closeLevelSelect(e) {
+    if (!e || e.target === document.getElementById('levelSelectModal') || e.target.classList.contains('type-select-cancel')) {
+        document.getElementById('levelSelectModal').classList.remove('active');
+    }
+}
+
+function selectLevel(level) {
+    currentLevel = level;
+    const levelInfo = levelData[level];
+
+    // Update header title
+    document.getElementById('levelTitle').textContent = levelInfo.name + ' - 题型选择';
+
+    // Update tips
+    document.getElementById('levelTips').textContent = levelInfo.tips;
+    document.querySelector('#screen-level .tips-card').style.display = 'block';
+
+    // Render practice types
+    const container = document.getElementById('levelTypes');
+    container.innerHTML = levelInfo.types.map(t => `
+        <div class="practice-type-btn" onclick="startPractice('${t.id}')">
+            <div class="type-icon ${t.color}">${t.icon}</div>
+            <div class="type-info">
+                <div class="type-name">${t.name}</div>
+                <div class="type-desc">${t.desc}</div>
+            </div>
+            <div class="type-arrow">▶</div>
+        </div>
+    `).join('');
+
+    // Show the level screen
+    showScreen('screen-level');
+}
+
+// Practice
+function startPractice(type) {
+    currentType = type;
+    const level = levelData[currentLevel];
+    const typeData = level.types.find(t => t.id === type);
+
+    document.getElementById('levelSelectModal').classList.remove('active');
+
+    // Update title
+    document.getElementById('practiceTitle').textContent = level.name + '：' + typeData.name;
+
+    // Update instruction based on type
+    const pictureArea = document.getElementById('pictureArea');
+    const audioArea = document.getElementById('audioArea');
+    const textQuestion = document.getElementById('textQuestion');
+    const instruction = document.getElementById('questionInstruction');
+
+    // Reset all displays
+    pictureArea.style.display = 'none';
+    audioArea.style.display = 'none';
+    textQuestion.style.display = 'none';
+
+    if (type === 'picture') {
+        // 看图说话 - show picture
+        pictureArea.style.display = 'block';
+        instruction.textContent = '请观察下方图片，并根据图片内容说一段话。建议说 8-10 句话。';
+    } else if (type === 'reading') {
+        // 朗读 - show text to read
+        textQuestion.style.display = 'block';
+        textQuestion.textContent = '中国有句古话叫"民以食为天"，这说明了饮食在人们生活中的重要地位。随着时代的进步，人们不仅追求吃得饱，更追求吃得健康、吃得有文化。';
+        instruction.textContent = '请用流利且自然的语调朗读下方的文字。注意停顿、语气起伏。';
+    } else if (type === 'answer' || type === 'question') {
+        // 回答问题 - show question text
+        textQuestion.style.display = 'block';
+        textQuestion.textContent = '如果现在你有一个月的假期，你打算做什么？';
+        instruction.textContent = '请根据以下问题，用普通话进行回答，录音时长建议为 1-2 分钟。';
+    } else if (type === 'repeat' || type === 'retell' || type === 'qa') {
+        // 听后重复/复述/回答 - show audio
+        audioArea.style.display = 'block';
+
+        if (type === 'repeat') {
+            instruction.textContent = '请先仔细聆听音频。音频播放结束后，请立即重复出你听到的内容。';
+        } else if (type === 'retell') {
+            instruction.textContent = '请先仔细聆听一段话。音频播放结束后，请根据记忆复述该段话的内容。';
+        } else if (type === 'qa') {
+            instruction.textContent = '请先仔细聆听问题。音频播放结束后，请简洁明了地回答该问题。';
+        }
+    } else {
+        // default - show question text
+        textQuestion.style.display = 'block';
+        instruction.textContent = '请根据以下问题，用普通话进行回答，录音时长建议为 1-2 分钟。';
+    }
+
+    // Reset recording state
+    isRecording = false;
+    recordingSeconds = 0;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micBtn').textContent = '🎤';
+    document.getElementById('recordingStatus').textContent = '点击麦克风开始录音';
+    document.getElementById('recordingStatus').className = 'recording-status';
+    document.getElementById('waveform').classList.add('hidden');
+    document.getElementById('submitBtn').style.display = 'none';
+
+    // Start timer
+    practiceSeconds = 120;
+    updatePracticeTimer();
+
+    showScreen('screen-practice');
+}
+
+function toggleRecording() {
+    const micBtn = document.getElementById('micBtn');
+    const status = document.getElementById('recordingStatus');
+    const waveform = document.getElementById('waveform');
+    const submitBtn = document.getElementById('submitBtn');
+
+    isRecording = !isRecording;
+
+    if (isRecording) {
+        recordingSeconds = 0;
+        micBtn.classList.add('recording');
+        micBtn.textContent = '⏹';
+        status.textContent = '正在录音... 00:00';
+        status.className = 'recording-status active';
+        waveform.classList.remove('hidden');
+
+        timerInterval = setInterval(() => {
+            recordingSeconds++;
+            const mins = Math.floor(recordingSeconds / 60).toString().padStart(2, '0');
+            const secs = (recordingSeconds % 60).toString().padStart(2, '0');
+            status.textContent = `正在录音... ${mins}:${secs}`;
+        }, 1000);
+    } else {
+        clearInterval(timerInterval);
+        micBtn.classList.remove('recording');
+        micBtn.textContent = '🔄';
+
+        const mins = Math.floor(recordingSeconds / 60);
+        const secs = recordingSeconds % 60;
+        status.textContent = `录音已完成 (${mins > 0 ? mins + '分' : ''}${secs}秒)`;
+        status.className = 'recording-status done';
+        waveform.classList.add('hidden');
+
+        submitBtn.style.display = 'block';
+    }
+}
+
+function updatePracticeTimer() {
+    const mins = Math.floor(practiceSeconds / 60).toString().padStart(2, '0');
+    const secs = (practiceSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('timerDisplay').textContent = `${mins}:${secs}`;
+
+    if (practiceSeconds > 0) {
+        practiceTimer = setTimeout(() => {
+            practiceSeconds--;
+            updatePracticeTimer();
+        }, 1000);
+    }
+}
+
+function submitPractice() {
+    showScreen('screen-result');
+}
+
+function stopTimers() {
+    if (timerInterval) clearInterval(timerInterval);
+    if (practiceTimer) clearTimeout(practiceTimer);
+}
+
+// History
+function showHistory() {
+    showScreen('screen-history');
+    updateNav(document.querySelectorAll('.nav-item')[2]);
+}
+
+function filterHistory(el, filter) {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+}
+
+// Result
+function showResult() {
+    showScreen('screen-result');
+}
+
+// Word Modal
+function showWordModal(word) {
+    const modal = document.getElementById('wordModal');
+    document.getElementById('modalChar').textContent = word;
+
+    if (word === '大家') {
+        document.getElementById('modalPinyin').textContent = 'dàjiā';
+        document.getElementById('modalTip').textContent = '两个字的第一声和第四声区分不明显，建议加强声调起伏练习。';
+    } else if (word === '很' || word === '心') {
+        document.getElementById('modalPinyin').textContent = word === '很' ? 'hěn' : 'xīn';
+        document.getElementById('modalTip').textContent = '声调稍微低了一点，建议抬高音调，保持水平。';
+    } else {
+        document.getElementById('modalPinyin').textContent = word + ' (标准)';
+        document.getElementById('modalTip').textContent = '发音非常标准！继续保持这种语感。';
+    }
+
+    modal.classList.add('active');
+}
+
+function closeWordModal(e) {
+    if (!e || e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+        document.getElementById('wordModal').classList.remove('active');
+    }
+}
+</script>
+</body>
+</html>
