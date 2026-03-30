@@ -533,7 +533,25 @@ body::before {
 /* ===== Level Select Screen ===== */
 .level-select-header {
     padding: 20px 0;
-    text-align: center;
+    text-align: left;
+}
+
+.back-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--slate);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background: rgba(0,0,0,0.1);
 }
 
 .level-select-header h2 {
@@ -754,6 +772,11 @@ body::before {
     background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
+.record-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 @keyframes recordPulse {
     0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
     50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
@@ -859,12 +882,16 @@ body::before {
 
 /* ===== Waveform ===== */
 .waveform {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     gap: 4px;
     height: 32px;
     margin-bottom: 12px;
+}
+
+.waveform.active {
+    display: flex;
 }
 
 .wave-bar {
@@ -1129,6 +1156,7 @@ body::before {
 /* ===== History Screen ===== */
 .history-header {
     padding: 20px 0;
+    text-align: left;
 }
 
 .history-header h2 {
@@ -1447,8 +1475,13 @@ body::before {
         <div id="screen-level" class="screen">
             <div class="screen-content">
                 <div class="level-select-header fade-in">
-                    <h2 id="level-title">选择练习类型</h2>
-                    <p id="level-desc">请选择你要练习的题型</p>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="back-btn" id="back-btn" onclick="goBack()" style="display:none;">←</div>
+                        <div>
+                            <h2 id="level-title">选择练习类型</h2>
+                            <p id="level-desc">请选择你要练习的题型</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="level-types-grid" id="level-types"></div>
             </div>
@@ -1663,13 +1696,114 @@ function updateNav(el) {
     el.classList.add('active');
 }
 
-function showScreen(id) {
+// Page navigation history with state
+let pageHistory = [];
+let currentScreen = 'screen-home';
+// Track if screen-level is showing level cards (true) or type cards (false)
+let showingLevelCards = true;
+
+function showScreen(id, showBottomNav) {
+    if (id === currentScreen) return;
+
+    // Push current screen to history
+    pageHistory.push(currentScreen);
+    currentScreen = id;
+
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+
+    // Update back button visibility
+    const backBtn = document.getElementById('back-btn');
+    if (backBtn) {
+        backBtn.style.display = pageHistory.length > 0 ? 'flex' : 'none';
+    }
+
+    // Set bottom nav based on screen type
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (showBottomNav === true) {
+        bottomNav.style.display = 'flex';
+    } else if (showBottomNav === false) {
+        bottomNav.style.display = 'none';
+    } else {
+        if (id === 'screen-home' || id === 'screen-history') {
+            bottomNav.style.display = 'flex';
+        } else {
+            bottomNav.style.display = 'none';
+        }
+    }
+}
+
+function goBack() {
+    if (pageHistory.length === 0) {
+        goHome();
+        return;
+    }
+
+    const prevScreen = pageHistory.pop();
+    currentScreen = prevScreen;
+
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(prevScreen).classList.add('active');
+
+    // Update back button visibility
+    const backBtn = document.getElementById('back-btn');
+    if (backBtn) {
+        backBtn.style.display = pageHistory.length > 0 ? 'flex' : 'none';
+    }
+
+    // When returning to screen-level, re-render the level cards (not type cards)
+    // MUST set showingLevelCards BEFORE checking bottom nav
+    if (prevScreen === 'screen-level') {
+        showingLevelCards = true;
+        const grid = document.getElementById('level-types');
+        grid.innerHTML = '';
+        Object.keys(levelData).forEach((key, index) => {
+            const level = levelData[key];
+            const card = document.createElement('div');
+            const delayClass = index === 0 ? 'fade-in' : index === 1 ? 'fade-in fade-in-delay-1' : 'fade-in fade-in-delay-2';
+            card.className = `level-type-card ${delayClass}`;
+            card.onclick = () => selectLevel(key);
+            const icons = { beginner: '🌱', intermediate: '⛰️', advanced: '👑' };
+            card.innerHTML = `
+                <div class="type-icon ${key === 'beginner' ? 'green' : key === 'intermediate' ? 'blue' : 'rose'}">${icons[key]}</div>
+                <div class="type-info">
+                    <div class="type-name">${level.name}</div>
+                    <div class="type-desc">${level.types.length} 种题型</div>
+                </div>
+                <span class="type-arrow">›</span>
+            `;
+            grid.appendChild(card);
+        });
+        document.getElementById('level-title').textContent = '选择级别';
+        document.getElementById('level-desc').textContent = '请选择一个级别开始练习';
+        // Always hide back button when at 选择级别 (screen-level is root of this branch)
+        document.getElementById('back-btn').style.display = 'none';
+    }
+
+    // Show bottom nav based on which screen we're returning to
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (prevScreen === 'screen-home' || prevScreen === 'screen-history') {
+        bottomNav.style.display = 'flex';
+    } else if (prevScreen === 'screen-level' && showingLevelCards) {
+        // Returning to screen-level showing level cards - show bottom nav
+        bottomNav.style.display = 'flex';
+    } else {
+        bottomNav.style.display = 'none';
+    }
 }
 
 function goHome() {
-    showScreen('screen-home');
+    const prevScreen = currentScreen;  // Save before clearing
+    pageHistory = [];  // Clear history on goHome
+    currentScreen = 'screen-home';  // Set currentScreen first to prevent showScreen from pushing to history
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-home').classList.add('active');
+    // Show bottom nav on home
+    const bottomNav = document.querySelector('.bottom-nav');
+    bottomNav.style.display = 'flex';
+    // Update back button
+    const backBtn = document.getElementById('back-btn');
+    if (backBtn) backBtn.style.display = 'none';
     stopTimers();
 }
 
@@ -1708,15 +1842,18 @@ let recordTimer = null;
 let recordSeconds = 0;
 
 function showLevelSelect() {
-    showScreen('screen-level');
+    showingLevelCards = true;  // Mark that we're showing level cards
+    showScreen('screen-level', true);  // true = show bottom nav
     document.getElementById('level-title').textContent = '选择级别';
     document.getElementById('level-desc').textContent = '请选择一个级别开始练习';
+    document.getElementById('back-btn').style.display = 'none';
     const grid = document.getElementById('level-types');
     grid.innerHTML = '';
-    Object.keys(levelData).forEach(key => {
+    Object.keys(levelData).forEach((key, index) => {
         const level = levelData[key];
         const card = document.createElement('div');
-        card.className = 'level-type-card';
+        const delayClass = index === 0 ? 'fade-in' : index === 1 ? 'fade-in fade-in-delay-1' : 'fade-in fade-in-delay-2';
+        card.className = `level-type-card ${delayClass}`;
         card.onclick = () => selectLevel(key);
         const icons = { beginner: '🌱', intermediate: '⛰️', advanced: '👑' };
         card.innerHTML = `
@@ -1733,15 +1870,33 @@ function showLevelSelect() {
 
 function selectLevel(level) {
     currentLevel = level;
-    showScreen('screen-level');
+    showingLevelCards = false;  // Mark that we're showing type cards (not level cards)
+
+    // Always push to history when going from level cards to type cards
+    // This ensures back button returns to the previous view (home or 选择级别)
+    pageHistory.push(currentScreen);
+
+    // Update currentScreen since we're now viewing the type-select view
+    currentScreen = 'screen-level';
+
+    // Activate screen-level and deactivate others
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-level').classList.add('active');
+
+    // Set bottom nav to none for type-select view
+    const bottomNav = document.querySelector('.bottom-nav');
+    bottomNav.style.display = 'none';
+
+    document.getElementById('back-btn').style.display = 'flex';
     const data = levelData[level];
     document.getElementById('level-title').textContent = data.name;
     document.getElementById('level-desc').textContent = '请选择练习类型';
     const grid = document.getElementById('level-types');
     grid.innerHTML = '';
-    data.types.forEach(t => {
+    data.types.forEach((t, index) => {
         const card = document.createElement('div');
-        card.className = 'level-type-card';
+        const delayClass = index === 0 ? 'fade-in' : index === 1 ? 'fade-in fade-in-delay-1' : 'fade-in fade-in-delay-2';
+        card.className = `level-type-card ${delayClass}`;
         card.onclick = () => startPractice(t.id);
         card.innerHTML = `
             <div class="type-icon ${t.color}">${t.icon}</div>
@@ -1837,13 +1992,16 @@ function playAudio() {
     const progressBar = document.getElementById('audio-progress-bar');
     const hint = document.getElementById('audio-hint');
     const waveform = document.getElementById('waveform');
+    const recordBtn = document.getElementById('record-btn');
 
     if (!audioPlaying) {
         audioPlaying = true;
         btn.classList.add('playing');
         progress.style.display = 'block';
-        if (waveform) waveform.style.display = 'flex';
+        if (waveform) waveform.classList.add('active');
         hint.textContent = '播放中...';
+        // Disable record button while audio is playing
+        if (recordBtn) recordBtn.disabled = true;
 
         // Simulate audio progress
         const audioInterval = setInterval(() => {
@@ -1864,11 +2022,14 @@ function stopAudio() {
     const progressBar = document.getElementById('audio-progress-bar');
     const hint = document.getElementById('audio-hint');
     const waveform = document.getElementById('waveform');
+    const recordBtn = document.getElementById('record-btn');
 
     btn.classList.remove('playing');
     progressBar.style.width = '0%';
-    if (waveform) waveform.style.display = 'none';
+    if (waveform) waveform.classList.remove('active');
     hint.textContent = '播放完成，可以开始录音';
+    // Enable record button after audio stops
+    if (recordBtn) recordBtn.disabled = false;
 }
 
 function startPractice(typeId) {
@@ -1877,6 +2038,7 @@ function startPractice(typeId) {
 
     // Find matching practice type
     let content = practiceContent['repeat'];
+    let needAudio = false;
     for (const key in practiceContent) {
         if (currentType.includes(key)) {
             content = practiceContent[key];
@@ -1884,15 +2046,25 @@ function startPractice(typeId) {
         }
     }
 
+    // Check if this type needs audio playback first
+    if (currentType.includes('repeat') || currentType.includes('qa') || currentType.includes('retell')) {
+        needAudio = true;
+    }
+
     document.getElementById('practice-title').textContent = content.title;
     document.getElementById('practice-content').innerHTML = content.content;
     document.getElementById('progress-fill').style.width = '30%';
     document.getElementById('progress-text').textContent = '3 / 10';
+
+    const recordBtnHtml = needAudio
+        ? `<button class="record-btn" id="record-btn" onclick="toggleRecord()" disabled>🎤</button>
+           <div class="record-status" id="record-status">请先播放音频</div>`
+        : `<button class="record-btn" id="record-btn" onclick="toggleRecord()">🎤</button>
+           <div class="record-status" id="record-status">点击开始录音</div>`;
+
     document.getElementById('practice-controls').innerHTML = `
-        <button class="record-btn" id="record-btn" onclick="toggleRecord()">🎤</button>
-        <div class="record-status" id="record-status">点击开始录音</div>
+        ${recordBtnHtml}
         <div class="record-timer" id="record-timer">00:00</div>
-        <button class="submit-btn" id="submit-btn" onclick="submitAnswer()" disabled>提交答案</button>
     `;
     isRecording = false;
     recordSeconds = 0;
@@ -1903,20 +2075,25 @@ function startPractice(typeId) {
 
 function exitPractice() {
     stopTimers();
-    showScreen('screen-home');
+    goBack();
 }
 
 function toggleRecord() {
     isRecording = !isRecording;
     if (isRecording) {
+        // Start recording
         recordTimer = setInterval(() => {
             recordSeconds++;
             updateRecordUI();
         }, 1000);
+        updateRecordUI();
     } else {
+        // Stop recording
         stopTimers();
+        updateRecordUI();
+        // Show submit button after recording stops
+        showSubmitButton();
     }
-    updateRecordUI();
 }
 
 function stopTimers() {
@@ -1925,8 +2102,7 @@ function stopTimers() {
         recordTimer = null;
     }
     isRecording = false;
-    recordSeconds = 0;
-    updateRecordUI();
+    // Don't reset recordSeconds - keep the recorded time
 }
 
 function updateRecordUI() {
@@ -1942,13 +2118,24 @@ function updateRecordUI() {
         btn.classList.add('recording');
         status.textContent = '正在录音...';
         status.classList.add('active');
-        // Enable submit button when recording
-        const submitBtn = document.getElementById('submit-btn');
-        if (submitBtn) submitBtn.disabled = false;
     } else {
         btn.classList.remove('recording');
         status.textContent = recordSeconds > 0 ? '录音完成' : '点击开始录音';
         status.classList.remove('active');
+    }
+}
+
+function showSubmitButton() {
+    const controls = document.getElementById('practice-controls');
+    if (controls) {
+        const mins = Math.floor(recordSeconds / 60).toString().padStart(2,'0');
+        const secs = (recordSeconds % 60).toString().padStart(2,'0');
+        controls.innerHTML = `
+            <button class="record-btn" onclick="toggleRecord()">🎤</button>
+            <div class="record-status">点击开始录音</div>
+            <div class="record-timer" id="record-timer">${mins}:${secs}</div>
+            <button class="submit-btn" onclick="submitAnswer()">提交答案</button>
+        `;
     }
 }
 
